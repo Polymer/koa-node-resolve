@@ -20,6 +20,7 @@
     "@types/is-stream": "^2.0.0",
     "@types/koa": "^2.0.48",
     "@types/koa-route": "^3.2.4",
+    "@types/node": "^12.0.0",
     "@types/parse5": "^5.0.0",
     "@types/resolve-from": "^5.0.1",
     "@types/supertest": "^2.0.7",

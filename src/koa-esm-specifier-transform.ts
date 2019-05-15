@@ -14,6 +14,7 @@
 import getStream from 'get-stream';
 import isStream from 'is-stream';
 import * as Koa from 'koa';
+import {Stream} from 'stream';
 import {transformHTMLString} from './transform-html';
 import {transformJavaScriptModuleString} from './transform-javascript-module';
 
@@ -38,7 +39,7 @@ export const middleware = (transformSpecifier: TransformSpecifierFunction):
 export default middleware;
 
 // TODO(usergenic): This should probably be published as a separate npm package.
-const getBodyAsString = async(body: Buffer|string): Promise<string> => {
+const getBodyAsString = async(body: Buffer|Stream|string): Promise<string> => {
   if (Buffer.isBuffer(body)) {
     return body.toString();
   }

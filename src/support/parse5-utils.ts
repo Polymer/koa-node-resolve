@@ -5,11 +5,12 @@
  * Once dom5 is updated, we can just use that package and not maintain these
  * here.
  */
-import {DefaultTreeElement, Node} from 'parse5';
+import {DefaultTreeCommentNode, DefaultTreeDocument, DefaultTreeDocumentFragment, DefaultTreeElement, DefaultTreeNode, DefaultTreeParentNode, DefaultTreeTextNode, Location} from 'parse5';
 
-const traverse = require('parse5-traverse');
-
-export function filter(iter: any, predicate: any, matches: any[] = []) {
+export function filter<T>(
+    iter: IterableIterator<T>,
+    predicate: (t: T) => boolean,
+    matches: T[] = []) {
   for (const value of iter) {
     if (predicate(value)) {
       matches.push(value);
@@ -18,53 +19,64 @@ export function filter(iter: any, predicate: any, matches: any[] = []) {
   return matches;
 }
 
-export function getAttr(ast: Node, name: string) {
-  if (ast.hasOwnProperty('attrs')) {
-    const attr = (<{name: string, value: any}[]>(<DefaultTreeElement>ast).attrs)
-                     .find(({name: attrName}) => attrName === name);
+export function getAttr(element: DefaultTreeNode, name: string): string {
+  if (isElement(element)) {
+    const attr = element.attrs.find(({name: attrName}) => attrName === name);
     if (attr) {
       return attr.value;
     }
   }
+  return '';
 }
 
-export function getTextContent(node: any): string {
+export function getTextContent(node: DefaultTreeNode): string {
   if (isCommentNode(node)) {
-    return node.data || '';
+    return node.data;
   }
   if (isTextNode(node)) {
-    return node.value || '';
+    return node.value;
   }
   const subtree = nodeWalkAll(node, isTextNode);
   return subtree.map(getTextContent).join('');
 }
 
-export function setAttr(ast: any, name: any, value: any) {
-  let attr = (<{name: string, value: any}[]>ast.attrs)
-                 .find(({name: attrName}) => attrName === name);
+export function setAttr(element: DefaultTreeNode, name: string, value: string) {
+  if (!isElement(element)) {
+    return;
+  }
+  const attr = element.attrs.find(({name: attrName}) => attrName === name);
   if (attr) {
     attr.value = value;
   } else {
-    ast.attrs.push({name, value});
+    element.attrs.push({name, value});
   }
 }
 
-export function insertBefore(parent: any, oldNode: any, newNode: any) {
+export function insertBefore(
+    parent: DefaultTreeNode,
+    oldNode: DefaultTreeNode,
+    newNode: DefaultTreeNode) {
+  if (!isParent(parent)) {
+    return;
+  }
   const index = parent.childNodes.indexOf(oldNode);
   insertNode(parent, index, newNode);
 }
 
 export function insertNode(
-    parent: any, index: any, newNode: any, replace: any = undefined) {
-  if (!parent.childNodes) {
-    parent.childNodes = [];
+    parent: DefaultTreeNode,
+    index: number,
+    newNode: DefaultTreeNode,
+    replace: DefaultTreeNode|undefined = undefined) {
+  if (!isParent(parent)) {
+    return;
   }
-  let newNodes = [];
+  let newNodes: DefaultTreeNode[] = [];
   let removedNode = replace ? parent.childNodes[index] : null;
   if (newNode) {
     if (isDocumentFragment(newNode)) {
       if (newNode.childNodes) {
-        newNodes = Array.from(newNode.childNodes);
+        newNodes = [...newNode.childNodes];
         newNode.childNodes.length = 0;
       }
     } else {
@@ -75,104 +87,135 @@ export function insertNode(
   if (replace) {
     removedNode = parent.childNodes[index];
   }
-  Array.prototype.splice.apply(
-      <any[]>parent.childNodes,
-      (<any>[index, replace ? 1 : 0]).concat(newNodes));
-  newNodes.forEach((n) => {n.parentNode = parent});
+  parent.childNodes.splice(index, replace ? 1 : 0, ...newNodes);
+  newNodes.forEach((n) => {
+    if (isChild(n)) {
+      n.parentNode = parent;
+    }
+  });
 
-  if (removedNode) {
-    removedNode.parentNode = undefined
+  if (removedNode && isChild(removedNode)) {
+    (<{parentNode: DefaultTreeParentNode | undefined}>removedNode).parentNode =
+        undefined;
   }
 }
 
-export function isCommentNode(node: any) {
-  return node.nodeName === '#comment'
+export function isChild(node: DefaultTreeNode): node is DefaultTreeTextNode|
+    DefaultTreeCommentNode|DefaultTreeElement {
+  return isCommentNode(node) || isElement(node) || isTextNode(node);
 }
 
-export function isDocumentFragment(node: any) {
-  return node.nodeName === '#document-fragment'
+export function isCommentNode(node: DefaultTreeNode):
+    node is DefaultTreeCommentNode {
+  return node.nodeName === '#comment';
 }
 
-export function isTextNode(node: any) {
-  return node.nodeName === '#text'
+export function isDocument(node: DefaultTreeNode): node is DefaultTreeDocument {
+  return node.nodeName === '#document';
 }
 
-export const defaultChildNodes = (node: any) => node.childNodes
+export function isDocumentFragment(node: DefaultTreeNode):
+    node is DefaultTreeDocumentFragment {
+  return node.nodeName === '#document-fragment';
+}
 
-export function* depthFirst(node: any, getChildNodes: any = defaultChildNodes):
-    any {
-      yield node;
-      const childNodes = getChildNodes(node);
-      if (childNodes === undefined) {
-        return;
-      }
-      for (const child of childNodes) {
-        yield* depthFirst(child, getChildNodes);
-      }
+export function isElement(node: DefaultTreeNode): node is DefaultTreeElement {
+  return !node.nodeName.startsWith('#');
+}
+
+export function isParent(node: DefaultTreeNode): node is DefaultTreeDocument|
+    DefaultTreeDocumentFragment|DefaultTreeElement {
+  return isElement(node) || isDocumentFragment(node) || isDocument(node);
+}
+
+export function isTextNode(node: DefaultTreeNode): node is DefaultTreeTextNode {
+  return node.nodeName === '#text';
+}
+
+export const defaultChildNodes = (node: DefaultTreeParentNode) =>
+    node.childNodes;
+
+export function*
+    depthFirst(
+        node: DefaultTreeNode,
+        getChildNodes: typeof defaultChildNodes = defaultChildNodes):
+        IterableIterator<DefaultTreeNode> {
+  yield node;
+  if (isParent(node)) {
+    const childNodes = getChildNodes(node);
+    if (childNodes === undefined) {
+      return;
     }
+    for (const child of childNodes) {
+      yield* depthFirst(child, getChildNodes);
+    }
+  }
+}
 
 export function nodeWalkAll(
-    node: any,
-    predicate: any,
-    matches: any = [],
-    getChildNodes: any = defaultChildNodes) {
+    node: DefaultTreeNode,
+    predicate: (node: DefaultTreeNode) => boolean,
+    matches: DefaultTreeNode[] = [],
+    getChildNodes: typeof defaultChildNodes = defaultChildNodes) {
   return filter(depthFirst(node, getChildNodes), predicate, matches);
 }
 
-export function removeFakeRootElements(node: any) {
-  const fakeRootElements: any[] = [];
-  traverse(node, {
-    pre: (node: any) => {
-      if (node.nodeName && node.nodeName.match(/^(html|head|body)$/i) &&
-          !node.sourceCodeLocation) {
-        fakeRootElements.unshift(node);
-      }
+export function removeFakeRootElements(node: DefaultTreeNode) {
+  const fakeRootElements: DefaultTreeElement[] = [];
+  nodeWalkAll(node, (node) => {
+    if (node.nodeName && node.nodeName.match(/^(html|head|body)$/i) &&
+        !(<DefaultTreeElement&{sourceCodeLocation: Location | undefined}>node)
+             .sourceCodeLocation) {
+      fakeRootElements.unshift(node as DefaultTreeElement);
     }
-  })
+    return false;
+  });
   fakeRootElements.forEach(removeNodeSaveChildren);
 }
 
-export function removeNode(node: any) {
-  const parent = node.parentNode;
-  if (parent && parent.childNodes) {
-    const idx = parent.childNodes.indexOf(node);
-    parent.childNodes.splice(idx, 1);
+export function removeNode(node: DefaultTreeNode) {
+  if (isChild(node)) {
+    const parent = node.parentNode;
+    if (parent && parent.childNodes) {
+      const idx = parent.childNodes.indexOf(node);
+      parent.childNodes.splice(idx, 1);
+    }
   }
-  node.parentNode = undefined;
+  (node as unknown as {parentNode: Object | undefined}).parentNode = undefined;
 }
 
-export function removeNodeSaveChildren(node: any) {
+export function removeNodeSaveChildren(node: DefaultTreeNode) {
   // We can't save the children if there's no parent node to provide
   // for them.
+  if (!isChild(node)) {
+    return;
+  }
   const fosterParent = node.parentNode;
   if (!fosterParent) {
     return;
   }
-  const children = (node.childNodes || []).slice();
-  for (const child of children) {
-    insertBefore(node.parentNode, node, child);
+  if (isParent(node)) {
+    const children = (node.childNodes || []).slice();
+    for (const child of children) {
+      insertBefore(fosterParent as unknown as DefaultTreeNode, node, child);
+    }
   }
   removeNode(node);
 }
 
-export function setTextContent(node: any, value: any) {
+export function setTextContent(node: DefaultTreeNode, value: string) {
   if (isCommentNode(node)) {
     node.data = value;
   } else if (isTextNode(node)) {
     node.value = value;
-  } else {
-    const tn = newTextNode(value);
-    tn.parentNode = node;
-    node.childNodes = [tn];
+  } else if (isParent(node)) {
+    newTextNode(value, node);
   }
 }
 
-export function newTextNode(value: any) {
-  return {
-    nodeName: '#text',
-    value: value,
-    parentNode: undefined,
-    attrs: [],
-    __location: undefined,
-  };
+export function newTextNode(
+    value: string, parentNode: DefaultTreeParentNode): DefaultTreeTextNode {
+  const textNode: DefaultTreeTextNode = {nodeName: '#text', value, parentNode};
+  parentNode.childNodes = [textNode];
+  return textNode;
 }

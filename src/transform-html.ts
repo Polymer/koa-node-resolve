@@ -1,31 +1,33 @@
 import {DefaultTreeNode, Node, parse, serialize} from 'parse5';
-import traverse from 'parse5-traverse';
 import {resolve as resolveURL} from 'url';
+
 import {TransformSpecifierFunction} from './koa-esm-specifier-transform';
-import {getAttr, getTextContent, removeFakeRootElements, setTextContent} from './support/parse5-utils';
+import {getAttr, getTextContent, nodeWalkAll, removeFakeRootElements, setTextContent} from './support/parse5-utils';
 import {transformJavaScriptModuleString} from './transform-javascript-module';
 
 export function transformHTMLAST(
-    ast: Node, url: string, transformSpecifier: TransformSpecifierFunction) {
+    ast: DefaultTreeNode,
+    url: string,
+    transformSpecifier: TransformSpecifierFunction) {
   const baseURL = getBaseURL(ast, url);
   getInlineModuleScripts(ast).forEach((scriptTag) => {
     const js = getTextContent(scriptTag);
     const transformedJs =
         transformJavaScriptModuleString(js, baseURL, transformSpecifier);
     setTextContent(scriptTag, transformedJs);
-  })
+  });
   return;
 }
 
 export function transformHTMLString(
     html: string, url: string, transformSpecifier: TransformSpecifierFunction) {
-  const ast = parse(html);
+  const ast = <DefaultTreeNode>parse(html);
   removeFakeRootElements(ast);
   transformHTMLAST(ast, url, transformSpecifier);
   return serialize(ast);
 }
 
-function getBaseURL(ast: Node, location: string): string {
+function getBaseURL(ast: DefaultTreeNode, location: string): string {
   const baseTag = getBaseTag(ast);
   if (!baseTag) {
     return location;
@@ -37,28 +39,17 @@ function getBaseURL(ast: Node, location: string): string {
   return resolveURL(location, baseHref);
 }
 
-function getBaseTag(ast: Node): Node|undefined {
+function getBaseTag(ast: DefaultTreeNode): DefaultTreeNode|undefined {
   return getTags(ast, 'base').shift();
 }
 
-function getInlineModuleScripts(ast: Node): Node[] {
+function getInlineModuleScripts(ast: DefaultTreeNode): DefaultTreeNode[] {
   return getTags(ast, 'script')
       .filter(
           (node) =>
               getAttr(node, 'type') === 'module' && !getAttr(node, 'src'));
 }
 
-function getTags(ast: Node, name: string): Node[] {
-  return query(ast, (node: Node) => (<DefaultTreeNode>node).nodeName === name);
-}
-
-function query(ast: Node, filter: (node: Node) => boolean): Node[] {
-  const nodes: Node[] = [];
-  traverse(ast, {
-    pre: (node: Node) => {
-      filter(node);
-      nodes.push(node);
-    }
-  });
-  return nodes;
+function getTags(ast: DefaultTreeNode, name: string): DefaultTreeNode[] {
+  return nodeWalkAll(ast, (node) => node.nodeName === name);
 }

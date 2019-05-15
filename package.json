@@ -6,6 +6,9 @@
   "scripts": {
     "build": "tsc",
     "clean": "rimraf lib",
+    "depcheck": "depcheck --ignore-dirs=lib --ignores=\"source-map-support,@types/*\"",
+    "format": "find src -name \"*.ts\" | xargs clang-format --style=file -i",
+    "lint": "tslint -p . --fix",
     "test": "tape -r source-map-support/register 'lib/test/*.test.js' 'lib/test/**/*.test.js' | tap-diff"
   },
   "keywords": [],
@@ -26,13 +29,14 @@
     "@types/supertest": "^2.0.7",
     "@types/tape": "^4.2.33",
     "clang-format": "^1.2.4",
+    "depcheck": "^0.8.0",
     "koa": "^2.7.0",
-    "koa-static": "^5.0.0",
     "rimraf": "^2.6.3",
     "source-map-support": "^0.5.12",
     "supertest": "^4.0.2",
     "tap-diff": "^0.1.1",
     "tape": "^4.10.1",
+    "tslint": "^5.16.0",
     "typescript": "^3.4.5"
   },
   "dependencies": {
@@ -43,7 +47,6 @@
     "is-stream": "^2.0.0",
     "koa-route": "^3.2.0",
     "parse5": "^5.1.0",
-    "parse5-traverse": "^1.0.3",
     "resolve-from": "^5.0.0"
   }
 }

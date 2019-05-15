@@ -11,7 +11,7 @@ export default middleware;
 export function middleware(transformSpecifier: TransformSpecifierFunction):
     Koa.Middleware {
   return async (ctx: Koa.Context, next: Function) => {
-    await next()
+    await next();
 
     if (ctx.response.is('html')) {
       ctx.body = resolveSpecifiersInInlineScriptTags(
@@ -22,7 +22,7 @@ export function middleware(transformSpecifier: TransformSpecifierFunction):
       ctx.body = resolveSpecifiersInJavaScriptModule(
           await getBodyAsString(ctx.body), ctx.request.url, transformSpecifier);
     }
-  }
+  };
 }
 
 function resolveSpecifiersInInlineScriptTags(
@@ -40,7 +40,7 @@ function resolveSpecifiersInJavaScriptModule(
 }
 
 // TODO(usergenic): This should probably be published as a separate npm package.
-async function getBodyAsString(body: any): Promise<string> {
+async function getBodyAsString(body: Buffer|string): Promise<string> {
   if (!body) {
     return '';
   }

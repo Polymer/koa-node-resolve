@@ -14,8 +14,10 @@
 import * as Koa from 'koa';
 import {resolve as resolvePath} from 'path';
 import {parse as parseURL} from 'url';
+
 import esmSpecifierTransform from './koa-esm-specifier-transform';
 import resolveNPMSpecifier from './support/resolve-npm-specifier';
+import {getBasePath, noLeadingSlash} from './support/url-utils';
 
 export type Options = {
   /* On-disk package root path used for NPM package resolution; defaults to
@@ -29,10 +31,9 @@ export type Options = {
 
 export const middleware = (options: Options = {}): Koa.Middleware => {
   const onDiskPackageRoot = resolvePath(options.packageRoot || '.');
-  const baseHref =
-      (options.baseHref || '').replace(/^\//, '').replace(/[^\/]+$/, '');
+  const baseHref = noLeadingSlash(getBasePath(options.baseHref || ''));
   return esmSpecifierTransform((baseURL: string, specifier: string) => {
-    const path = (parseURL(baseURL).pathname || '/').replace(/^\//, '');
+    const path = noLeadingSlash(parseURL(baseURL).pathname || '/');
     if (!path.startsWith(baseHref)) {
       return specifier;
     }

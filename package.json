@@ -25,6 +25,7 @@
     "@types/koa-route": "^3.2.4",
     "@types/node": "^12.0.0",
     "@types/parse5": "^5.0.0",
+    "@types/path-is-inside": "^1.0.0",
     "@types/resolve-from": "^5.0.1",
     "@types/supertest": "^2.0.7",
     "@types/tape": "^4.2.33",

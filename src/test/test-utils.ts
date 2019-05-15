@@ -20,7 +20,7 @@ export type AppOptions = {
   routes?: {[key: string]: string|Function},
 };
 
-export function createApp(options: AppOptions): Koa {
+export const createApp = (options: AppOptions): Koa => {
   const app = new Koa();
   const {middleware, routes} = options;
   if (middleware) {
@@ -43,25 +43,23 @@ export function createApp(options: AppOptions): Koa {
     }
   }
   return app;
-}
+};
 
-export async function createAndServe(
-    options: AppOptions, callback: (server: Server) => void) {
-  serveApp(createApp(options), callback);
-}
+export const createAndServe =
+    async (options: AppOptions, callback: (server: Server) => void) =>
+        serveApp(createApp(options), callback);
 
-export async function serveApp(app: Koa, callback: (server: Server) => void) {
+export const serveApp =
+    async (app: Koa, callback: (server: Server) => void) => {
   const port = process.env.PORT || 3000;
   const server =
       app.listen(port).on('error', (e) => `ERROR: ${console.log(e)}`);
   await callback(server);
   server.close();
-}
+};
 
-export function squeezeHTML(html: string): string {
-  return html.replace(/\s+/mg, ' ')
-      .replace(/>\s</g, '><')
-      .replace(/>\s/g, '>\n')
-      .replace(/\s</g, '\n<')
-      .trim();
-}
+export const squeezeHTML = (html: string): string => html.replace(/\s+/mg, ' ')
+                                                         .replace(/>\s</g, '><')
+                                                         .replace(/>\s/g, '>\n')
+                                                         .replace(/\s</g, '\n<')
+                                                         .trim();

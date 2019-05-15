@@ -21,19 +21,19 @@
  */
 import {DefaultTreeCommentNode, DefaultTreeDocument, DefaultTreeDocumentFragment, DefaultTreeElement, DefaultTreeNode, DefaultTreeParentNode, DefaultTreeTextNode, Location} from 'parse5';
 
-export function filter<T>(
-    iter: IterableIterator<T>,
-    predicate: (t: T) => boolean,
-    matches: T[] = []) {
-  for (const value of iter) {
-    if (predicate(value)) {
-      matches.push(value);
-    }
-  }
-  return matches;
-}
+export const filter =
+    <T>(iter: IterableIterator<T>,
+        predicate: (t: T) => boolean,
+        matches: T[] = []) => {
+      for (const value of iter) {
+        if (predicate(value)) {
+          matches.push(value);
+        }
+      }
+      return matches;
+    };
 
-export function getAttr(element: DefaultTreeNode, name: string): string {
+export const getAttr = (element: DefaultTreeNode, name: string): string => {
   if (isElement(element)) {
     const attr = element.attrs.find(({name: attrName}) => attrName === name);
     if (attr) {
@@ -41,9 +41,9 @@ export function getAttr(element: DefaultTreeNode, name: string): string {
     }
   }
   return '';
-}
+};
 
-export function getTextContent(node: DefaultTreeNode): string {
+export const getTextContent = (node: DefaultTreeNode): string => {
   if (isCommentNode(node)) {
     return node.data;
   }
@@ -52,129 +52,123 @@ export function getTextContent(node: DefaultTreeNode): string {
   }
   const subtree = nodeWalkAll(node, isTextNode);
   return subtree.map(getTextContent).join('');
-}
+};
 
-export function setAttr(element: DefaultTreeNode, name: string, value: string) {
-  if (!isElement(element)) {
-    return;
-  }
-  const attr = element.attrs.find(({name: attrName}) => attrName === name);
-  if (attr) {
-    attr.value = value;
-  } else {
-    element.attrs.push({name, value});
-  }
-}
-
-export function insertBefore(
-    parent: DefaultTreeNode,
-    oldNode: DefaultTreeNode,
-    newNode: DefaultTreeNode) {
-  if (!isParent(parent)) {
-    return;
-  }
-  const index = parent.childNodes.indexOf(oldNode);
-  insertNode(parent, index, newNode);
-}
-
-export function insertNode(
-    parent: DefaultTreeNode,
-    index: number,
-    newNode: DefaultTreeNode,
-    replace: DefaultTreeNode|undefined = undefined) {
-  if (!isParent(parent)) {
-    return;
-  }
-  let newNodes: DefaultTreeNode[] = [];
-  let removedNode = replace ? parent.childNodes[index] : null;
-  if (newNode) {
-    if (isDocumentFragment(newNode)) {
-      if (newNode.childNodes) {
-        newNodes = [...newNode.childNodes];
-        newNode.childNodes.length = 0;
+export const setAttr =
+    (element: DefaultTreeNode, name: string, value: string) => {
+      if (!isElement(element)) {
+        return;
       }
-    } else {
-      newNodes = [newNode];
-      removeNode(newNode);
-    }
-  }
-  if (replace) {
-    removedNode = parent.childNodes[index];
-  }
-  parent.childNodes.splice(index, replace ? 1 : 0, ...newNodes);
-  newNodes.forEach((n) => {
-    if (isChild(n)) {
-      n.parentNode = parent;
-    }
-  });
+      const attr = element.attrs.find(({name: attrName}) => attrName === name);
+      if (attr) {
+        attr.value = value;
+      } else {
+        element.attrs.push({name, value});
+      }
+    };
 
-  if (removedNode && isChild(removedNode)) {
-    (<{parentNode: DefaultTreeParentNode | undefined}>removedNode).parentNode =
-        undefined;
-  }
-}
+export const insertBefore =
+    (parent: DefaultTreeNode,
+     oldNode: DefaultTreeNode,
+     newNode: DefaultTreeNode) => {
+      if (!isParent(parent)) {
+        return;
+      }
+      const index = parent.childNodes.indexOf(oldNode);
+      insertNode(parent, index, newNode);
+    };
 
-export function isChild(node: DefaultTreeNode): node is DefaultTreeTextNode|
-    DefaultTreeCommentNode|DefaultTreeElement {
-  return isCommentNode(node) || isElement(node) || isTextNode(node);
-}
+export const insertNode =
+    (parent: DefaultTreeNode,
+     index: number,
+     newNode: DefaultTreeNode,
+     replace: DefaultTreeNode|undefined = undefined) => {
+      if (!isParent(parent)) {
+        return;
+      }
+      let newNodes: DefaultTreeNode[] = [];
+      let removedNode = replace ? parent.childNodes[index] : null;
+      if (newNode) {
+        if (isDocumentFragment(newNode)) {
+          if (newNode.childNodes) {
+            newNodes = [...newNode.childNodes];
+            newNode.childNodes.length = 0;
+          }
+        } else {
+          newNodes = [newNode];
+          removeNode(newNode);
+        }
+      }
+      if (replace) {
+        removedNode = parent.childNodes[index];
+      }
+      parent.childNodes.splice(index, replace ? 1 : 0, ...newNodes);
+      newNodes.forEach((n) => {
+        if (isChild(n)) {
+          n.parentNode = parent;
+        }
+      });
 
-export function isCommentNode(node: DefaultTreeNode):
-    node is DefaultTreeCommentNode {
-  return node.nodeName === '#comment';
-}
+      if (removedNode && isChild(removedNode)) {
+        (<{parentNode: DefaultTreeParentNode | undefined}>removedNode)
+            .parentNode = undefined;
+      }
+    };
 
-export function isDocument(node: DefaultTreeNode): node is DefaultTreeDocument {
-  return node.nodeName === '#document';
-}
+export const isChild = (node: DefaultTreeNode): node is DefaultTreeTextNode|
+    DefaultTreeCommentNode|DefaultTreeElement =>
+        isCommentNode(node) || isElement(node) || isTextNode(node);
 
-export function isDocumentFragment(node: DefaultTreeNode):
-    node is DefaultTreeDocumentFragment {
-  return node.nodeName === '#document-fragment';
-}
+export const isCommentNode =
+    (node: DefaultTreeNode): node is DefaultTreeCommentNode =>
+        node.nodeName === '#comment';
 
-export function isElement(node: DefaultTreeNode): node is DefaultTreeElement {
-  return !node.nodeName.startsWith('#');
-}
+export const isDocument =
+    (node: DefaultTreeNode): node is DefaultTreeDocument =>
+        node.nodeName === '#document';
 
-export function isParent(node: DefaultTreeNode): node is DefaultTreeDocument|
-    DefaultTreeDocumentFragment|DefaultTreeElement {
-  return isElement(node) || isDocumentFragment(node) || isDocument(node);
-}
+export const isDocumentFragment =
+    (node: DefaultTreeNode): node is DefaultTreeDocumentFragment =>
+        node.nodeName === '#document-fragment';
 
-export function isTextNode(node: DefaultTreeNode): node is DefaultTreeTextNode {
-  return node.nodeName === '#text';
-}
+export const isElement = (node: DefaultTreeNode): node is DefaultTreeElement =>
+    !node.nodeName.startsWith('#');
+
+export const isParent = (node: DefaultTreeNode): node is DefaultTreeDocument|
+    DefaultTreeDocumentFragment|DefaultTreeElement =>
+        isElement(node) || isDocumentFragment(node) || isDocument(node);
+
+export const isTextNode =
+    (node: DefaultTreeNode): node is DefaultTreeTextNode =>
+        node.nodeName === '#text';
 
 export const defaultChildNodes = (node: DefaultTreeParentNode) =>
     node.childNodes;
 
-export function*
-    depthFirst(
-        node: DefaultTreeNode,
-        getChildNodes: typeof defaultChildNodes = defaultChildNodes):
+export const depthFirst = function*
+    (node: DefaultTreeNode,
+     getChildNodes: typeof defaultChildNodes = defaultChildNodes):
         IterableIterator<DefaultTreeNode> {
-  yield node;
-  if (isParent(node)) {
-    const childNodes = getChildNodes(node);
-    if (childNodes === undefined) {
-      return;
-    }
-    for (const child of childNodes) {
-      yield* depthFirst(child, getChildNodes);
-    }
-  }
-}
+          yield node;
+          if (isParent(node)) {
+            const childNodes = getChildNodes(node);
+            if (childNodes === undefined) {
+              return;
+            }
+            for (const child of childNodes) {
+              yield* depthFirst(child, getChildNodes);
+            }
+          }
+        };
 
-export function nodeWalkAll(
-    node: DefaultTreeNode,
-    predicate: (node: DefaultTreeNode) => boolean,
-    matches: DefaultTreeNode[] = [],
-    getChildNodes: typeof defaultChildNodes = defaultChildNodes) {
-  return filter(depthFirst(node, getChildNodes), predicate, matches);
-}
+export const nodeWalkAll =
+    (node: DefaultTreeNode,
+     predicate: (node: DefaultTreeNode) => boolean,
+     matches: DefaultTreeNode[] = [],
+     getChildNodes: typeof defaultChildNodes = defaultChildNodes) =>
+        filter(depthFirst(node, getChildNodes), predicate, matches);
 
-export function removeFakeRootElements(node: DefaultTreeNode) {
+export const removeFakeRootElements = (node: DefaultTreeNode) => {
   const fakeRootElements: DefaultTreeElement[] = [];
   nodeWalkAll(node, (node) => {
     if (node.nodeName && node.nodeName.match(/^(html|head|body)$/i) &&
@@ -185,9 +179,9 @@ export function removeFakeRootElements(node: DefaultTreeNode) {
     return false;
   });
   fakeRootElements.forEach(removeNodeSaveChildren);
-}
+};
 
-export function removeNode(node: DefaultTreeNode) {
+export const removeNode = (node: DefaultTreeNode) => {
   if (isChild(node)) {
     const parent = node.parentNode;
     if (parent && parent.childNodes) {
@@ -196,9 +190,9 @@ export function removeNode(node: DefaultTreeNode) {
     }
   }
   (node as unknown as {parentNode: Object | undefined}).parentNode = undefined;
-}
+};
 
-export function removeNodeSaveChildren(node: DefaultTreeNode) {
+export const removeNodeSaveChildren = (node: DefaultTreeNode) => {
   // We can't save the children if there's no parent node to provide
   // for them.
   if (!isChild(node)) {
@@ -215,9 +209,9 @@ export function removeNodeSaveChildren(node: DefaultTreeNode) {
     }
   }
   removeNode(node);
-}
+};
 
-export function setTextContent(node: DefaultTreeNode, value: string) {
+export const setTextContent = (node: DefaultTreeNode, value: string) => {
   if (isCommentNode(node)) {
     node.data = value;
   } else if (isTextNode(node)) {
@@ -225,11 +219,12 @@ export function setTextContent(node: DefaultTreeNode, value: string) {
   } else if (isParent(node)) {
     newTextNode(value, node);
   }
-}
+};
 
-export function newTextNode(
-    value: string, parentNode: DefaultTreeParentNode): DefaultTreeTextNode {
-  const textNode: DefaultTreeTextNode = {nodeName: '#text', value, parentNode};
-  parentNode.childNodes = [textNode];
-  return textNode;
-}
+export const newTextNode =
+    (value: string, parentNode: DefaultTreeParentNode): DefaultTreeTextNode => {
+      const textNode:
+          DefaultTreeTextNode = {nodeName: '#text', value, parentNode};
+      parentNode.childNodes = [textNode];
+      return textNode;
+    };

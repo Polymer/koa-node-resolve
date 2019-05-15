@@ -20,40 +20,37 @@ import {transformJavaScriptModuleString} from './transform-javascript-module';
 export type TransformSpecifierFunction = (baseURL: string, specifier: string) =>
     string;
 
+export const middleware = (transformSpecifier: TransformSpecifierFunction):
+                              Koa.Middleware =>
+    async (ctx: Koa.Context, next: Function) => {
+  await next();
+
+  if (ctx.response.is('html')) {
+    ctx.body = resolveSpecifiersInInlineScriptTags(
+        await getBodyAsString(ctx.body), ctx.request.url, transformSpecifier);
+  }
+
+  if (ctx.response.is('js')) {
+    ctx.body = resolveSpecifiersInJavaScriptModule(
+        await getBodyAsString(ctx.body), ctx.request.url, transformSpecifier);
+  }
+};
 export default middleware;
-export function middleware(transformSpecifier: TransformSpecifierFunction):
-    Koa.Middleware {
-  return async (ctx: Koa.Context, next: Function) => {
-    await next();
 
-    if (ctx.response.is('html')) {
-      ctx.body = resolveSpecifiersInInlineScriptTags(
-          await getBodyAsString(ctx.body), ctx.request.url, transformSpecifier);
-    }
+const resolveSpecifiersInInlineScriptTags =
+    (body: string,
+     requestURL: string,
+     transformSpecifier: TransformSpecifierFunction): string =>
+        transformHTMLString(body, requestURL, transformSpecifier);
 
-    if (ctx.response.is('js')) {
-      ctx.body = resolveSpecifiersInJavaScriptModule(
-          await getBodyAsString(ctx.body), ctx.request.url, transformSpecifier);
-    }
-  };
-}
-
-function resolveSpecifiersInInlineScriptTags(
-    body: string,
-    requestURL: string,
-    transformSpecifier: TransformSpecifierFunction): string {
-  return transformHTMLString(body, requestURL, transformSpecifier);
-}
-
-function resolveSpecifiersInJavaScriptModule(
-    body: string,
-    requestURL: string,
-    transformSpecifier: TransformSpecifierFunction): string {
-  return transformJavaScriptModuleString(body, requestURL, transformSpecifier);
-}
+const resolveSpecifiersInJavaScriptModule =
+    (body: string,
+     requestURL: string,
+     transformSpecifier: TransformSpecifierFunction): string =>
+        transformJavaScriptModuleString(body, requestURL, transformSpecifier);
 
 // TODO(usergenic): This should probably be published as a separate npm package.
-async function getBodyAsString(body: Buffer|string): Promise<string> {
+const getBodyAsString = async(body: Buffer|string): Promise<string> => {
   if (!body) {
     return '';
   }
@@ -67,4 +64,4 @@ async function getBodyAsString(body: Buffer|string): Promise<string> {
     return body;
   }
   return '';
-}
+};

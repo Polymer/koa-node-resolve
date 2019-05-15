@@ -27,8 +27,7 @@ export type Options = {
   baseHref?: string,
 };
 
-export default middleware;
-export function middleware(options: Options = {}): Koa.Middleware {
+export const middleware = (options: Options = {}): Koa.Middleware => {
   const onDiskPackageRoot = resolvePath(options.packageRoot || '.');
   const baseHref =
       (options.baseHref || '').replace(/^\//, '').replace(/[^\/]+$/, '');
@@ -42,4 +41,6 @@ export function middleware(options: Options = {}): Koa.Middleware {
     const resolvedPath = resolveNPMSpecifier(modulePath, specifier);
     return resolvedPath;
   });
-}
+};
+
+export default middleware;

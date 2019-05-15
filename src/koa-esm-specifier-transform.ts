@@ -26,28 +26,16 @@ export const middleware = (transformSpecifier: TransformSpecifierFunction):
   await next();
 
   if (ctx.response.is('html')) {
-    ctx.body = resolveSpecifiersInInlineScriptTags(
+    ctx.body = transformHTMLString(
         await getBodyAsString(ctx.body), ctx.request.url, transformSpecifier);
   }
 
   if (ctx.response.is('js')) {
-    ctx.body = resolveSpecifiersInJavaScriptModule(
+    ctx.body = transformJavaScriptModuleString(
         await getBodyAsString(ctx.body), ctx.request.url, transformSpecifier);
   }
 };
 export default middleware;
-
-const resolveSpecifiersInInlineScriptTags =
-    (body: string,
-     requestURL: string,
-     transformSpecifier: TransformSpecifierFunction): string =>
-        transformHTMLString(body, requestURL, transformSpecifier);
-
-const resolveSpecifiersInJavaScriptModule =
-    (body: string,
-     requestURL: string,
-     transformSpecifier: TransformSpecifierFunction): string =>
-        transformJavaScriptModuleString(body, requestURL, transformSpecifier);
 
 // TODO(usergenic): This should probably be published as a separate npm package.
 const getBodyAsString = async(body: Buffer|string): Promise<string> => {

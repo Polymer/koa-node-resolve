@@ -39,17 +39,14 @@ export default middleware;
 
 // TODO(usergenic): This should probably be published as a separate npm package.
 const getBodyAsString = async(body: Buffer|string): Promise<string> => {
-  if (!body) {
-    return '';
-  }
   if (Buffer.isBuffer(body)) {
     return body.toString();
   }
   if (isStream(body)) {
     return await getStream(body);
   }
-  if (typeof body === 'string') {
-    return body;
+  if (typeof body !== 'string') {
+    return '';
   }
-  return '';
+  return body;
 };

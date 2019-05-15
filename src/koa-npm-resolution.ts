@@ -31,13 +31,15 @@ export type Options = {
 
 export const middleware = (options: Options = {}): Koa.Middleware => {
   const onDiskPackageRoot = resolvePath(options.packageRoot || '.');
-  const baseHref = noLeadingSlash(getBasePath(options.baseHref || ''));
+  const basePath =
+      options.baseHref ? noLeadingSlash(getBasePath(options.baseHref)) : '';
   return esmSpecifierTransform((baseURL: string, specifier: string) => {
-    const path = noLeadingSlash(parseURL(baseURL).pathname || '/');
-    if (!path.startsWith(baseHref)) {
+    const pathname = parseURL(baseURL).pathname || '/';
+    const path = noLeadingSlash(pathname);
+    if (!path.startsWith(basePath)) {
       return specifier;
     }
-    const debasedPath = path.slice(baseHref.length);
+    const debasedPath = path.slice(basePath.length);
     const modulePath = resolvePath(onDiskPackageRoot, debasedPath);
     const resolvedPath = resolveNPMSpecifier(modulePath, specifier);
     return resolvedPath;

@@ -23,8 +23,8 @@ export default (modulePath: string, specifier: string): string => {
 };
 
 export const relativePath = (from: string, to: string): string => {
-  from = fslash(from);
-  to = fslash(to);
+  from = forwardSlashesOnlyPlease(from);
+  to = forwardSlashesOnlyPlease(to);
   if (!from.endsWith('/')) {
     from = from.replace(/[^/]*$/, '');
   }
@@ -34,4 +34,5 @@ export const relativePath = (from: string, to: string): string => {
 const ensureLeadingDot = (path: string): string =>
     (path.startsWith('../') || path.startsWith('./')) ? path : './' + path;
 
-const fslash = (path: string): string => path.replace(/\\/g, '/');
+const forwardSlashesOnlyPlease = (path: string): string =>
+    path.replace(/\\/g, '/');

@@ -16,7 +16,7 @@ import {foo} from './node_modules/stuff/index.js';
 
 Because this is middleware, you can use it in a simple static file server as well as a proxy server sitting in front of a test server such as the one `karma` starts up.  (See [karma testing setup](#karma-testing-setup) below.)
 
-Note: HTML and JavaScript are parsed on every request for those content-types, it is intended for use in development context to fascilitate build-free testing/iteration as opposed to in a high volume production webserver.
+Note: HTML and JavaScript are parsed on every request for those content-types, it is intended for use in development context to facilitate build-free testing/iteration as opposed to in a high volume production web server.
 
 ## Installation
 

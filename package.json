@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "lib/koa-node-resolve.js",
+  "files": [
+    "lib/*",
+    "!lib/test"
+  ],
   "scripts": {
     "build": "tsc",
     "clean": "rimraf lib",

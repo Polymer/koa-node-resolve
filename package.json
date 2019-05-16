@@ -1,8 +1,8 @@
 {
-  "name": "koa-npm-resolution",
+  "name": "koa-node-resolve",
   "version": "1.0.0",
   "description": "",
-  "main": "lib/koa-npm-resolution.js",
+  "main": "lib/koa-node-resolve.js",
   "scripts": {
     "build": "tsc",
     "clean": "rimraf lib",

@@ -15,7 +15,7 @@ import {resolve as resolvePath} from 'path';
 import request from 'supertest';
 import test from 'tape';
 
-import createMiddleware from '../koa-npm-resolution';
+import createMiddleware from '../koa-node-resolve';
 import {createAndServe, squeezeHTML} from './test-utils';
 
 test('transforms resolvable specifier in JavaScript module', async (t) => {

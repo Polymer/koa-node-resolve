@@ -2,10 +2,6 @@
 
 This is a middleware for Koa servers that resolves Node package specifiers in standard JS modules to relative paths for use on the web.
 
-Because of the cost to parse HTML/JavaScript in the middleware, this is intended for use in development context to fascilitate build-free testing/iteration as opposed to in a high volume production webserver.
-
-## What?
-
 This import uses a *bare module specifier*, which won't currently load natively in browsers (until [import maps](https://www.chromestatus.com/feature/5315286962012160) are available):
 
 ```js
@@ -19,6 +15,8 @@ import {foo} from './node_modules/stuff/index.js';
 ```
 
 Because this is middleware, you can use it in a simple static file server as well as a proxy server sitting in front of a test server such as the one `karma` starts up.  (See [karma testing setup](#karma-testing-setup) below.)
+
+Note: HTML and JavaScript are parsed on every request for those content-types, it is intended for use in development context to fascilitate build-free testing/iteration as opposed to in a high volume production webserver.
 
 ## Installation
 

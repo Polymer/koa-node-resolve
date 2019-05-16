@@ -42,11 +42,11 @@ const server = new Koa()
 $ node dev-server.js
 ```
 
-Now you can serve up your web assets and NPM package specifiers will be transformed on request.
+Now you can serve up your web assets and Node package specifiers will be transformed on request.
 
 ## Karma Testing Setup
 
-In a `karma` setup, your `karma.conf.js` file could create the Koa server before exporting the config.  The Koa server uses the `koa-proxy` package (therefore `npm install --save-dev koa-proxy`) in between the browser and the Karma server, transforming all the NPM package specifiers encountered in documents located under the `base/` URL namespace, which is a special Karma behavior for partitioning the package resources under test from Karma support resources.
+In a `karma` setup, your `karma.conf.js` file could create the Koa server before exporting the config.  The Koa server uses the `koa-proxy` package (therefore `npm install --save-dev koa-proxy`) in between the browser and the Karma server, transforming all the Node package specifiers encountered in documents located under the `base/` URL namespace, which is a special Karma behavior for partitioning the package resources under test from Karma support resources.
 
 ```js
 const Koa = require('koa');

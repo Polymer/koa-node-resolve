@@ -8,12 +8,14 @@
     "!lib/test"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "npm run lint && npm run format && npm run depcheck && npm run clean && npm run compile",
     "clean": "rimraf lib",
+    "compile": "tsc",
     "depcheck": "depcheck --ignore-dirs=lib --ignores=\"source-map-support,@types/*\"",
     "format": "find src -name \"*.ts\" | xargs clang-format --style=file -i",
     "lint": "tslint -p . --fix",
-    "test": "tape -r source-map-support/register 'lib/test/*.test.js' 'lib/test/**/*.test.js' | tap-diff"
+    "test": "npm run test:raw --silent | tap-diff",
+    "test:raw": "tape -r source-map-support/register 'lib/test/*.test.js' 'lib/test/**/*.test.js'"
   },
   "repository": {
     "type": "git",
@@ -32,7 +34,6 @@
     "@types/babel__traverse": "^7.0.6",
     "@types/babylon": "^6.16.5",
     "@types/get-stream": "^3.0.2",
-    "@types/is-stream": "^2.0.0",
     "@types/koa": "^2.0.48",
     "@types/koa-route": "^3.2.4",
     "@types/node": "^12.0.0",
@@ -58,7 +59,6 @@
     "@babel/parser": "^7.4.4",
     "@babel/traverse": "^7.4.4",
     "get-stream": "^5.1.0",
-    "is-stream": "^2.0.0",
     "parse5": "^5.1.0",
     "resolve-from": "^5.0.0"
   }

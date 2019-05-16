@@ -12,7 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 import getStream from 'get-stream';
-import isStream from 'is-stream';
 import * as Koa from 'koa';
 import {Stream} from 'stream';
 import {transformHTMLString} from './transform-html';
@@ -51,3 +50,7 @@ const getBodyAsString = async(body: Buffer|Stream|string): Promise<string> => {
   }
   return body;
 };
+
+const isStream = (value: Buffer|Stream|string): value is Stream =>
+    value !== null && typeof value === 'object' &&
+    typeof (<{pipe: Function | undefined}>value).pipe === 'function';

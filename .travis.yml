@@ -1,7 +1,6 @@
 language: node_js
 node_js:
   - "node"
-sudo: false
 dist: xenial
 cache:
   directories:

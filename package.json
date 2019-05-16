@@ -11,7 +11,7 @@
     "build": "npm run lint && npm run format && npm run depcheck && npm run clean && npm run compile",
     "clean": "rimraf lib",
     "compile": "tsc",
-    "depcheck": "depcheck --ignore-dirs=lib --ignores=\"source-map-support,@types/*\"",
+    "depcheck": "depcheck --ignore-dirs=lib --ignores=\"rimraf,source-map-support,@types/*\"",
     "format": "find src -name \"*.ts\" | xargs clang-format --style=file -i",
     "lint": "tslint -p . --fix",
     "test": "npm run test:raw --silent | tap-diff",

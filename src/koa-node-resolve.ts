@@ -17,7 +17,7 @@ import {parse as parseURL} from 'url';
 
 import esmSpecifierTransform from './koa-esm-specifier-transform';
 import {getBasePath, noLeadingSlash} from './support/path-utils';
-import resolveNPMSpecifier from './support/resolve-npm-specifier';
+import resolveSpecifier from './support/resolve-node-specifier';
 
 export type Options = {
   /* On-disk package root path used for NPM package resolution; defaults to
@@ -41,7 +41,7 @@ export const middleware = (options: Options = {}): Koa.Middleware => {
     }
     const debasedPath = path.slice(basePath.length);
     const modulePath = resolvePath(onDiskPackageRoot, debasedPath);
-    const resolvedPath = resolveNPMSpecifier(modulePath, specifier);
+    const resolvedPath = resolveSpecifier(modulePath, specifier);
     return resolvedPath;
   });
 };

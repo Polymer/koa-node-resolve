@@ -12,5 +12,5 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
- * Rewrites resolvable NPM package specifiers in JavaScript module files.
- * Rewrites resolvable NPM package specifiers in HTML files in `<script type="module">` elements, honoring `<base href>` where present.
+- Rewrites resolvable Node package specifiers in JavaScript module files.
+- Rewrites resolvable Node package specifiers in HTML files in `<script type="module">` elements, honoring `<base href>` where present.

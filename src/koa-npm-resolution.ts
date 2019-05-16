@@ -16,8 +16,8 @@ import {resolve as resolvePath} from 'path';
 import {parse as parseURL} from 'url';
 
 import esmSpecifierTransform from './koa-esm-specifier-transform';
+import {getBasePath, noLeadingSlash} from './support/path-utils';
 import resolveNPMSpecifier from './support/resolve-npm-specifier';
-import {getBasePath, noLeadingSlash} from './support/url-utils';
 
 export type Options = {
   /* On-disk package root path used for NPM package resolution; defaults to

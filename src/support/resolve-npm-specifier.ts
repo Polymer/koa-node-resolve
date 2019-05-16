@@ -11,8 +11,8 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import {relative} from 'path';
 import resolveFrom from 'resolve-from';
+import {relativePath} from './path-utils';
 
 export default (modulePath: string, specifier: string): string => {
   const resolved = resolveFrom.silent(modulePath, specifier);
@@ -21,18 +21,3 @@ export default (modulePath: string, specifier: string): string => {
   }
   return specifier;
 };
-
-export const relativePath = (from: string, to: string): string => {
-  from = forwardSlashesOnlyPlease(from);
-  to = forwardSlashesOnlyPlease(to);
-  if (!from.endsWith('/')) {
-    from = from.replace(/[^/]*$/, '');
-  }
-  return ensureLeadingDot(relative(from, to));
-};
-
-const ensureLeadingDot = (path: string): string =>
-    (path.startsWith('../') || path.startsWith('./')) ? path : './' + path;
-
-const forwardSlashesOnlyPlease = (path: string): string =>
-    path.replace(/\\/g, '/');

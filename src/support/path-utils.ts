@@ -11,6 +11,24 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-export const noLeadingSlash = (href: string): string => href.replace(/^\//, '');
+import {relative} from 'path';
+
+export const ensureLeadingDot = (path: string): string =>
+    (path.startsWith('../') || path.startsWith('./')) ? path : './' + path;
+
+export const forwardSlashesOnlyPlease = (path: string): string =>
+    path.replace(/\\/g, '/');
+
 export const getBasePath = (href: string): string =>
     href.replace(/[^\/]+$/, '');
+
+export const noLeadingSlash = (href: string): string => href.replace(/^\//, '');
+
+export const relativePath = (from: string, to: string): string => {
+  from = forwardSlashesOnlyPlease(from);
+  to = forwardSlashesOnlyPlease(to);
+  if (!from.endsWith('/')) {
+    from = from.replace(/[^/]*$/, '');
+  }
+  return ensureLeadingDot(relative(from, to));
+};

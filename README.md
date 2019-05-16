@@ -1,6 +1,8 @@
 # koa-node-resolve
 
-This is a middleware for Koa servers that resolves Node package specifiers in standard JS modules to relative paths for use on the web.  It is currently only intended for use as middleware in development servers to fascilitate build-free testing/iteration.
+This is a middleware for Koa servers that resolves Node package specifiers in standard JS modules to relative paths for use on the web.
+
+Because of the cost to parse HTML/JavaScript in the middleware, this is intended for use in development context to fascilitate build-free testing/iteration as opposed to in a high volume production webserver.
 
 ## What?
 

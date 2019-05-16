@@ -2,7 +2,7 @@
 
 Middleware for Koa servers that resolves Node package specifiers in standard JS modules to relative paths for use on the web.
 
-This import uses a _bare module specifier_, which won't currently load natively in browsers (until [import maps](https://www.chromestatus.com/feature/5315286962012160) are available):
+The following import uses a _bare module specifier_, which won't currently load natively in browsers (until [import maps](https://www.chromestatus.com/feature/5315286962012160) are available):
 
 ```js
 import { foo } from "stuff";

@@ -24,8 +24,7 @@ export const getBasePath = (href: string): string =>
 
 export const noLeadingSlash = (href: string): string => href.replace(/^\//, '');
 
-export const relativePath = (from: string, to: string): string => {
-  from = getBasePath(forwardSlashesOnlyPlease(from));
-  to = forwardSlashesOnlyPlease(to);
-  return ensureLeadingDot(relative(from, to));
-};
+export const relativePath = (from: string, to: string): string =>
+    ensureLeadingDot(relative(
+        getBasePath(forwardSlashesOnlyPlease(from)),
+        forwardSlashesOnlyPlease(to)));

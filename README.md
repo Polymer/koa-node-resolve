@@ -4,9 +4,19 @@ This is a middleware for Koa servers that resolves Node package specifiers in st
 
 ## What?
 
-So you want to write your front-end code using standard JS modules and you're using NPM packages and you don't want to run a build step to transform those various import statements from convenient forms like: `import stuff from 'stuff'` into `import stuff from './node_modules/stuff/index.js'` etc.  This middleware simply transforms them when serving up the response from your server.
+This import uses a *bare module specifier*, which won't currently load natively in browsers (until [import maps](https://www.chromestatus.com/feature/5315286962012160) are available):
 
-That means you can use the middleware in a simple server that delivers static files as well as in a proxy server that might be piping files from a test server such as the one `karma` starts up.  (See [karma testing setup](#karma-testing-setup) below.)
+```js
+import {foo} from 'stuff';
+```
+
+`koa-node-resolve` solves this problem by resolving `stuff` using the same rules as [Node `require()`](https://nodejs.org/api/modules.html#modules_all_together), and transforming the import specifier to a path that can be loaded natively by any browser that [supports](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import#Browser_compatibility) standard JS modules:
+
+```js
+import {foo} from './node_modules/stuff/index.js';
+```
+
+Because this is middleware, you can use it in a simple static file server as well as a proxy server sitting in front of a test server such as the one `karma` starts up.  (See [karma testing setup](#karma-testing-setup) below.)
 
 ## Installation
 

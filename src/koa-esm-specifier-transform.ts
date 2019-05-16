@@ -28,9 +28,7 @@ export const middleware = (transformSpecifier: TransformSpecifierFunction):
   if (ctx.response.is('html')) {
     ctx.body = transformHTMLString(
         await getBodyAsString(ctx.body), ctx.request.url, transformSpecifier);
-  }
-
-  if (ctx.response.is('js')) {
+  } else if (ctx.response.is('js')) {
     ctx.body = transformJavaScriptModuleString(
         await getBodyAsString(ctx.body), ctx.request.url, transformSpecifier);
   }

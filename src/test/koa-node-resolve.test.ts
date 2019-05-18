@@ -22,8 +22,7 @@ test('transforms resolvable specifier in JavaScript module', async (t) => {
   t.plan(1);
   createAndServe(
       {
-        middleware:
-            [createMiddleware({packageRoot: resolvePath(__dirname, '../..')})],
+        middleware: [createMiddleware(resolvePath(__dirname, '../..'))],
         routes: {
           '/my-module.js': `import * as resolveFrom from 'resolve-from';`,
         },
@@ -37,8 +36,7 @@ test('ignores unresolvable specifier in JavaScript module', async (t) => {
   t.plan(1);
   createAndServe(
       {
-        middleware:
-            [createMiddleware({packageRoot: resolvePath(__dirname, '../..')})],
+        middleware: [createMiddleware(resolvePath(__dirname, '../..'))],
         routes: {
           '/my-module.js': `import * as wubbleFlurp from 'wubble-flurp';`,
         },
@@ -52,8 +50,7 @@ test('transforms resolvable specifier in inline module script', async (t) => {
   t.plan(1);
   createAndServe(
       {
-        middleware:
-            [createMiddleware({packageRoot: resolvePath(__dirname, '../..')})],
+        middleware: [createMiddleware(resolvePath(__dirname, '../..'))],
         routes: {
           '/my-page.html': `
             <script type="module">
@@ -75,8 +72,7 @@ test('ignores unresolvable specifier in inline module script', async (t) => {
   t.plan(1);
   createAndServe(
       {
-        middleware:
-            [createMiddleware({packageRoot: resolvePath(__dirname, '../..')})],
+        middleware: [createMiddleware(resolvePath(__dirname, '../..'))],
         routes: {
           '/my-page.html': `
             <script type="module">

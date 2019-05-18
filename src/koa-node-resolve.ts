@@ -16,31 +16,15 @@ import {resolve as resolvePath} from 'path';
 import {parse as parseURL} from 'url';
 
 import esmSpecifierTransform from './koa-esm-specifier-transform';
-import {getBasePath, noLeadingSlash} from './support/path-utils';
+import {noLeadingSlash} from './support/path-utils';
 import resolveSpecifier from './support/resolve-node-specifier';
 
-export type Options = {
-  /* On-disk package root path used for NPM package resolution; defaults to
-     current folder. */
-  packageRoot?: string,
-  /* When serving the package from a base other than root.  If this option is
-     given, no specifier resolution will be attempted for documents served
-     outside the baseHref. */
-  baseHref?: string,
-};
-
-export const middleware = (options: Options = {}): Koa.Middleware => {
-  const onDiskPackageRoot = resolvePath(options.packageRoot || '.');
-  const basePath =
-      options.baseHref ? noLeadingSlash(getBasePath(options.baseHref)) : '';
+export const middleware = (packageRoot = '.'): Koa.Middleware => {
+  const onDiskPackageRoot = resolvePath(packageRoot);
   return esmSpecifierTransform((baseURL: string, specifier: string) => {
     const pathname = parseURL(baseURL).pathname || '/';
     const path = noLeadingSlash(pathname);
-    if (!path.startsWith(basePath)) {
-      return specifier;
-    }
-    const debasedPath = path.slice(basePath.length);
-    const modulePath = resolvePath(onDiskPackageRoot, debasedPath);
+    const modulePath = resolvePath(onDiskPackageRoot, path);
     const resolvedPath = resolveSpecifier(modulePath, specifier);
     return resolvedPath;
   });

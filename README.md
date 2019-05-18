@@ -49,7 +49,7 @@ In a `karma` setup, your `karma.conf.js` file could create the Koa server before
 ```js
 const Koa = require("koa");
 const server = new Koa()
-  .use(require("koa-node-resolve").middleware({ baseHref: "base" }))
+  .use(require("koa-mount")("/base", require("koa-node-resolve").middleware()))
   .use(require("koa-proxy")({ host: "http://127.0.0.1:9876" }))
   .listen(9877);
 
@@ -59,8 +59,15 @@ module.exports = config => {
       hostname: "127.0.0.1",
       port: 9877,
     },
+    files: [
+      { pattern: "test/**/*.js", type: "module" },
+      { pattern: "**/*.js", included: false },
+      { pattern: "node_modules/**/*", included: false },
+    ],
   });
 };
 ```
 
 In this setup, the Koa proxy server that runs the Node resolution middleware will be on port 9877 and the Karma server will be on port 9876, so be sure to open up `http://127.0.0.1:9877` in your browser rather than `http://127.0.0.1:9876`. The `upstreamProxy` configuration block tells Karma, when it launches browsers, to points them to the Koa app instead of directly to the Karma server.
+
+Note also that in this configuration its important to tell Karma that the test files are modules and to serve those up, but to list the other files, like the ones in `node_modules` as available but not "included" (i.e. Karma can serve them by request, but shouldn't add inline dependencies on them when generating its "context" HTML).

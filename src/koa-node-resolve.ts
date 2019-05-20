@@ -19,13 +19,10 @@ import {koaModuleSpecifierTransform} from './koa-module-specifier-transform';
 import {noLeadingSlash} from './support/path-utils';
 import {resolveNodeSpecifier} from './support/resolve-node-specifier';
 
-export const koaNodeResolve = (packageRoot = '.'): Koa.Middleware => {
-  const onDiskPackageRoot = resolvePath(packageRoot);
-  return koaModuleSpecifierTransform((baseURL: string, specifier: string) => {
-    const pathname = parseURL(baseURL).pathname || '/';
-    const path = noLeadingSlash(pathname);
-    const modulePath = resolvePath(onDiskPackageRoot, path);
-    const resolvedPath = resolveNodeSpecifier(modulePath, specifier);
-    return resolvedPath;
-  });
-};
+export const koaNodeResolve = (root = '.'): Koa.Middleware =>
+    koaModuleSpecifierTransform(
+        (baseURL: string, specifier: string) => resolveNodeSpecifier(
+            resolvePath(
+                resolvePath(root),
+                noLeadingSlash(parseURL(baseURL).pathname || '/')),
+            specifier));

@@ -16,7 +16,7 @@ import {parse} from '@babel/parser';
 import traverse from '@babel/traverse';
 import {NodePath} from '@babel/traverse';
 import {CallExpression, ExportAllDeclaration, ExportNamedDeclaration, ImportDeclaration, isImport, isStringLiteral, Node, StringLiteral} from '@babel/types';
-import {TransformSpecifierFunction} from './koa-esm-specifier-transform';
+import {TransformSpecifierFunction} from './koa-module-specifier-transform';
 
 export const transformJavaScriptModuleAST =
     (ast: Node,

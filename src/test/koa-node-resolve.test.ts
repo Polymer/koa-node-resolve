@@ -15,14 +15,14 @@ import {resolve as resolvePath} from 'path';
 import request from 'supertest';
 import test from 'tape';
 
-import createMiddleware from '../koa-node-resolve';
+import {koaNodeResolve} from '../koa-node-resolve';
 import {createAndServe, squeezeHTML} from './test-utils';
 
 test('transforms resolvable specifier in JavaScript module', async (t) => {
   t.plan(1);
   createAndServe(
       {
-        middleware: [createMiddleware(resolvePath(__dirname, '../..'))],
+        middleware: [koaNodeResolve(resolvePath(__dirname, '../..'))],
         routes: {
           '/my-module.js': `import * as resolve from 'resolve';`,
         },
@@ -36,7 +36,7 @@ test('ignores unresolvable specifier in JavaScript module', async (t) => {
   t.plan(1);
   createAndServe(
       {
-        middleware: [createMiddleware(resolvePath(__dirname, '../..'))],
+        middleware: [koaNodeResolve(resolvePath(__dirname, '../..'))],
         routes: {
           '/my-module.js': `import * as wubbleFlurp from 'wubble-flurp';`,
         },
@@ -50,7 +50,7 @@ test('transforms resolvable specifier in inline module script', async (t) => {
   t.plan(1);
   createAndServe(
       {
-        middleware: [createMiddleware(resolvePath(__dirname, '../..'))],
+        middleware: [koaNodeResolve(resolvePath(__dirname, '../..'))],
         routes: {
           '/my-page.html': `
             <script type="module">
@@ -72,7 +72,7 @@ test('ignores unresolvable specifier in inline module script', async (t) => {
   t.plan(1);
   createAndServe(
       {
-        middleware: [createMiddleware(resolvePath(__dirname, '../..'))],
+        middleware: [koaNodeResolve(resolvePath(__dirname, '../..'))],
         routes: {
           '/my-page.html': `
             <script type="module">

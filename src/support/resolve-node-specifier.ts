@@ -13,32 +13,31 @@
  */
 import nodeResolve from 'resolve';
 
-import {relativePath} from './path-utils';
+import {dirname, relativePath} from './path-utils';
 
-export default (modulePath: string, specifier: string): string => {
-  if (isURL(specifier)) {
-    return specifier;
-  }
-  try {
-    const dependencyPath = nodeResolve.sync(specifier, {
-      basedir: dirname(modulePath),
-      extensions: ['.js', '.json', '.node'],
-      packageFilter: (packageJson: {
-        main?: string,
-        module?: string,
-        'jsnext:main'?: string,
-      }) => Object.assign(packageJson, {
-        main:
-            packageJson.module || packageJson['jsnext:main'] || packageJson.main
-      })
-    });
-    return relativePath(modulePath, dependencyPath);
-  } catch (error) {
-    return specifier;
-  }
-};
-
-const dirname = (path: string): string => path.replace(/[^\/]+$/, '');
+export const resolveNodeSpecifier =
+    (modulePath: string, specifier: string): string => {
+      if (isURL(specifier)) {
+        return specifier;
+      }
+      try {
+        const dependencyPath = nodeResolve.sync(specifier, {
+          basedir: dirname(modulePath),
+          extensions: ['.js', '.json', '.node'],
+          packageFilter: (packageJson: {
+            main?: string,
+            module?: string,
+            'jsnext:main'?: string,
+          }) => Object.assign(packageJson, {
+            main: packageJson.module || packageJson['jsnext:main'] ||
+                packageJson.main
+          })
+        });
+        return relativePath(modulePath, dependencyPath);
+      } catch (error) {
+        return specifier;
+      }
+    };
 
 const isURL = (value: string) => {
   try {

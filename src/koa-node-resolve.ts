@@ -15,19 +15,17 @@ import * as Koa from 'koa';
 import {resolve as resolvePath} from 'path';
 import {parse as parseURL} from 'url';
 
-import esmSpecifierTransform from './koa-esm-specifier-transform';
+import {koaModuleSpecifierTransform} from './koa-module-specifier-transform';
 import {noLeadingSlash} from './support/path-utils';
-import resolveSpecifier from './support/resolve-node-specifier';
+import {resolveNodeSpecifier} from './support/resolve-node-specifier';
 
-export const middleware = (packageRoot = '.'): Koa.Middleware => {
+export const koaNodeResolve = (packageRoot = '.'): Koa.Middleware => {
   const onDiskPackageRoot = resolvePath(packageRoot);
-  return esmSpecifierTransform((baseURL: string, specifier: string) => {
+  return koaModuleSpecifierTransform((baseURL: string, specifier: string) => {
     const pathname = parseURL(baseURL).pathname || '/';
     const path = noLeadingSlash(pathname);
     const modulePath = resolvePath(onDiskPackageRoot, path);
-    const resolvedPath = resolveSpecifier(modulePath, specifier);
+    const resolvedPath = resolveNodeSpecifier(modulePath, specifier);
     return resolvedPath;
   });
 };
-
-export default middleware;

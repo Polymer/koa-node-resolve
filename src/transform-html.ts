@@ -14,7 +14,7 @@
 import {DefaultTreeNode, parse, serialize} from 'parse5';
 import {resolve as resolveURL} from 'url';
 
-import {TransformSpecifierFunction} from './koa-esm-specifier-transform';
+import {TransformSpecifierFunction} from './koa-module-specifier-transform';
 import {getAttr, getTextContent, nodeWalkAll, removeFakeRootElements, setTextContent} from './support/parse5-utils';
 import {transformJavaScriptModuleString} from './transform-javascript-module';
 

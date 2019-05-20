@@ -20,8 +20,9 @@ import {transformJavaScriptModuleString} from './transform-javascript-module';
 export type TransformSpecifierFunction = (baseURL: string, specifier: string) =>
     string;
 
-export const middleware = (transformSpecifier: TransformSpecifierFunction):
-                              Koa.Middleware =>
+export const koaModuleSpecifierTransform = (transformSpecifier:
+                                                TransformSpecifierFunction):
+                                               Koa.Middleware =>
     async (ctx: Koa.Context, next: Function) => {
   await next();
 
@@ -33,7 +34,6 @@ export const middleware = (transformSpecifier: TransformSpecifierFunction):
         await getBodyAsString(ctx.body), ctx.request.url, transformSpecifier);
   }
 };
-export default middleware;
 
 // TODO(usergenic): This should probably be published as a separate npm package.
 const getBodyAsString = async(body: Buffer|Stream|string): Promise<string> => {

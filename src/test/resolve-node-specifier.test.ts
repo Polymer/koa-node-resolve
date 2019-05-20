@@ -14,11 +14,11 @@
 import {resolve as resolvePath} from 'path';
 import test from 'tape';
 
-import resolveSpecifier from '../support/resolve-node-specifier';
+import {resolveNodeSpecifier} from '../support/resolve-node-specifier';
 
 test('resolve', (t) => {
   t.plan(1);
   const path =
-      resolveSpecifier(resolvePath(__dirname, '../..') + '/', 'resolve');
+      resolveNodeSpecifier(resolvePath(__dirname, '../..') + '/', 'resolve');
   t.equal(path, './node_modules/resolve/index.js');
 });

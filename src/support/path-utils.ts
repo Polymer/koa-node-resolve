@@ -13,6 +13,14 @@
  */
 import {relative} from 'path';
 
+/**
+ * Similar to `path.dirname()` except includes trailing slash and for a
+ * path `/like/this/` will return `/like/this/` instead of `/like` since the
+ * trailing slash indicates `this` is a folder name not a file name.
+ * (`path.dirname('/like/this/')` returns `/like`.)
+ */
+export const dirname = (path: string): string => path.replace(/[^\/]+$/, '');
+
 export const ensureLeadingDot = (path: string): string =>
     (path.startsWith('../') || path.startsWith('./')) ? path : './' + path;
 

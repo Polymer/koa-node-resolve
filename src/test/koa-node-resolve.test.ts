@@ -24,12 +24,12 @@ test('transforms resolvable specifier in JavaScript module', async (t) => {
       {
         middleware: [createMiddleware(resolvePath(__dirname, '../..'))],
         routes: {
-          '/my-module.js': `import * as resolveFrom from 'resolve-from';`,
+          '/my-module.js': `import * as resolve from 'resolve';`,
         },
       },
       async (server) => t.equal(
           (await request(server).get('/my-module.js')).text,
-          `import * as resolveFrom from "./node_modules/resolve-from/index.js";`));
+          `import * as resolve from "./node_modules/resolve/index.js";`));
 });
 
 test('ignores unresolvable specifier in JavaScript module', async (t) => {
@@ -54,7 +54,7 @@ test('transforms resolvable specifier in inline module script', async (t) => {
         routes: {
           '/my-page.html': `
             <script type="module">
-            import * as resolveFrom from 'resolve-from';
+            import * as resolve from 'resolve';
             </script>
           `,
         },
@@ -63,7 +63,7 @@ test('transforms resolvable specifier in inline module script', async (t) => {
           squeezeHTML((await request(server).get('/my-page.html')).text),
           squeezeHTML(`
             <script type="module">
-            import * as resolveFrom from "./node_modules/resolve-from/index.js";
+            import * as resolve from "./node_modules/resolve/index.js";
             </script>
           `)));
 });

@@ -19,6 +19,6 @@ import resolveSpecifier from '../support/resolve-node-specifier';
 test('resolve', (t) => {
   t.plan(1);
   const path =
-      resolveSpecifier(resolvePath(__dirname, '../..') + '/', 'resolve-from');
-  t.equal(path, './node_modules/resolve-from/index.js');
+      resolveSpecifier(resolvePath(__dirname, '../..') + '/', 'resolve');
+  t.equal(path, './node_modules/resolve/index.js');
 });

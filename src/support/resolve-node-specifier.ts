@@ -11,13 +11,40 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import resolveFrom from 'resolve-from';
+import nodeResolve from 'resolve';
+
 import {relativePath} from './path-utils';
 
 export default (modulePath: string, specifier: string): string => {
-  const resolved = resolveFrom.silent(modulePath, specifier);
-  if (resolved) {
-    return relativePath(modulePath, resolved);
+  if (isURL(specifier)) {
+    return specifier;
   }
-  return specifier;
+  try {
+    const dependencyPath = nodeResolve.sync(specifier, {
+      basedir: dirname(modulePath),
+      extensions: ['.js', '.json', '.node'],
+      packageFilter: (packageJson: {
+        main?: string,
+        module?: string,
+        'jsnext:main'?: string,
+      }) => Object.assign(packageJson, {
+        main:
+            packageJson.module || packageJson['jsnext:main'] || packageJson.main
+      })
+    });
+    return relativePath(modulePath, dependencyPath);
+  } catch (error) {
+    return specifier;
+  }
+};
+
+const dirname = (path: string): string => path.replace(/[^\/]+$/, '');
+
+const isURL = (value: string) => {
+  try {
+    new URL(value);
+    return true;
+  } catch (error) {
+    return false;
+  }
 };

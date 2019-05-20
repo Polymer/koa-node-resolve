@@ -24,6 +24,9 @@ export const dirname = (path: string): string => path.replace(/[^\/]+$/, '');
 export const ensureLeadingDot = (path: string): string =>
     (path.startsWith('../') || path.startsWith('./')) ? path : './' + path;
 
+export const ensureTrailingSlash = (path: string): string =>
+    path.endsWith('/') ? path : path + '/';
+
 export const forwardSlashesOnlyPlease = (path: string): string =>
     path.replace(/\\/g, '/');
 

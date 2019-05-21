@@ -20,9 +20,9 @@ import {transformJavaScriptModuleString} from './transform-javascript-module';
 export type TransformSpecifierFunction = (baseURL: string, specifier: string) =>
     string;
 
-export const koaModuleSpecifierTransform = (transformSpecifier:
-                                                TransformSpecifierFunction):
-                                               Koa.Middleware =>
+export const moduleSpecifierTransform = (transformSpecifier:
+                                             TransformSpecifierFunction):
+                                            Koa.Middleware =>
     async (ctx: Koa.Context, next: Function) => {
   await next();
 

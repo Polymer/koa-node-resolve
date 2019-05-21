@@ -15,12 +15,12 @@ import * as Koa from 'koa';
 import {resolve as resolvePath} from 'path';
 import {parse as parseURL} from 'url';
 
-import {koaModuleSpecifierTransform} from './koa-module-specifier-transform';
+import {moduleSpecifierTransform} from './koa-module-specifier-transform';
 import {noLeadingSlash} from './support/path-utils';
 import {resolveNodeSpecifier} from './support/resolve-node-specifier';
 
-export const koaNodeResolve = (root = '.'): Koa.Middleware =>
-    koaModuleSpecifierTransform(
+export const nodeResolve = (root = '.'): Koa.Middleware =>
+    moduleSpecifierTransform(
         (baseURL: string, specifier: string) => resolveNodeSpecifier(
             resolvePath(
                 resolvePath(root),

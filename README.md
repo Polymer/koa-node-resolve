@@ -29,10 +29,12 @@ $ npm install --save koa-node-resolve
 Create your own mini-development server in file `./dev-server.js`. This one depends on `koa` and `koa-static`, so you'll need to `npm install --save-dev koa koa-static` for your project to use it.
 
 ```js
-const Koa = require("koa");
+const Koa = require('koa');
+const staticFiles = require('koa-static');
+const { nodeResolve } = require('koa-node-resolve');
 const server = new Koa()
-  .use(require("koa-node-resolve").middleware())
-  .use(require("koa-static")("."))
+  .use(nodeResolve())
+  .use(staticFiles('.'))
   .listen(3000);
 ```
 
@@ -47,22 +49,25 @@ Now you can serve up your web assets and Node package specifiers will be transfo
 In a `karma` setup, your `karma.conf.js` file could create the Koa server before exporting the config. The Koa server uses the `koa-proxy` package (therefore `npm install --save-dev koa-proxy`) in between the browser and the Karma server, transforming all the Node package specifiers encountered in documents located under the `base/` URL namespace, which is a special Karma behavior for partitioning the package resources under test from Karma support resources.
 
 ```js
-const Koa = require("koa");
+const Koa = require('koa');
+const mount = require('koa-mount');
+const proxy = require('koa-proxy');
+const { nodeResolve } = require('koa-node-resolve');
 const server = new Koa()
-  .use(require("koa-mount")("/base", require("koa-node-resolve").middleware()))
-  .use(require("koa-proxy")({ host: "http://127.0.0.1:9876" }))
+  .use(mount('/base', nodeResolve()))
+  .use(proxy({ host: 'http://127.0.0.1:9876' }))
   .listen(9877);
 
 module.exports = config => {
   config.set({
     upstreamProxy: {
-      hostname: "127.0.0.1",
+      hostname: '127.0.0.1',
       port: 9877,
     },
     files: [
-      { pattern: "test/**/*.js", type: "module" },
-      { pattern: "**/*.js", included: false },
-      { pattern: "node_modules/**/*", included: false },
+      { pattern: 'test/**/*.js', type: 'module' },
+      { pattern: '**/*.js', included: false },
+      { pattern: 'node_modules/**/*', included: false },
     ],
   });
 };

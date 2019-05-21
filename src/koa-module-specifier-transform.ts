@@ -18,33 +18,52 @@ import {transformHTMLString} from './transform-html';
 import {transformJavaScriptModuleString} from './transform-javascript-module';
 
 export type TransformSpecifierFunction = (baseURL: string, specifier: string) =>
-    string;
+    string|undefined;
+export type Logger = {
+  error?: Function,
+  info?: Function,
+  debug?: Function
+};
+
+export type ModuleSpecifierTransformOptions = {
+  logger?: Logger
+};
 
 export const moduleSpecifierTransform =
-    (transformSpecifier: TransformSpecifierFunction): Koa.Middleware =>
-        async (ctx: Koa.Context, next: Function) => {
-      await next();
+    (transformSpecifier: TransformSpecifierFunction,
+     options: ModuleSpecifierTransformOptions = {}): Koa.Middleware => {
+      const logger = options.logger || console;
 
-      // When the response is not HTML or JavaScript, we have nothing to
-      // transform.
-      if (!(ctx.response.is('html') || ctx.response.is('js'))) {
-        return;
-      }
+      return async (ctx: Koa.Context, next: Function) => {
+        await next();
 
-      const body = await getBodyAsString(ctx.body);
+        // When the response is not HTML or JavaScript, we have nothing to
+        // transform.
+        if (!(ctx.response.is('html') || ctx.response.is('js'))) {
+          return;
+        }
 
-      // When there's no body to return, there's nothing to transform.
-      if (!body) {
-        return;
-      }
+        const body = await getBodyAsString(ctx.body);
 
-      if (ctx.response.is('html')) {
-        ctx.body =
-            transformHTMLString(body, ctx.request.url, transformSpecifier);
-      } else if (ctx.response.is('js')) {
-        ctx.body = transformJavaScriptModuleString(
-            body, ctx.request.url, transformSpecifier);
-      }
+        // When there's no body to return, there's nothing to transform.
+        if (!body) {
+          return;
+        }
+
+        try {
+          if (ctx.response.is('html')) {
+            ctx.body =
+                transformHTMLString(body, ctx.request.url, transformSpecifier);
+          } else if (ctx.response.is('js')) {
+            ctx.body = transformJavaScriptModuleString(
+                body, ctx.request.url, transformSpecifier);
+          }
+        } catch (error) {
+          if (logger.error) {
+            logger.error(error);
+          }
+        }
+      };
     };
 
 // TODO(usergenic): This should probably be published as a separate npm package.

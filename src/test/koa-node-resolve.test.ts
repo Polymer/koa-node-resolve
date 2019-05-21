@@ -16,44 +16,17 @@ import request from 'supertest';
 import test from 'tape';
 
 import {nodeResolve} from '../koa-node-resolve';
-import {createAndServe, squeezeHTML} from './test-utils';
+import {createAndServe, squeeze} from './test-utils';
 
 const fixturesPath = resolvePath(__dirname, '../../test/fixtures/');
 
-test('transforms resolvable specifier in JavaScript module', async (t) => {
-  t.plan(1);
+test('transforms resolvable specifiers', async (t) => {
+  t.plan(2);
   createAndServe(
       {
         middleware: [nodeResolve(fixturesPath)],
         routes: {
           '/my-module.js': `import * as x from 'x';`,
-        },
-      },
-      async (server) => t.equal(
-          (await request(server).get('/my-module.js')).text,
-          `import * as x from "./node_modules/x/main.js";`));
-});
-
-test('ignores unresolvable specifier in JavaScript module', async (t) => {
-  t.plan(1);
-  createAndServe(
-      {
-        middleware: [nodeResolve(fixturesPath)],
-        routes: {
-          '/my-module.js': `import * as wubbleFlurp from 'wubble-flurp';`,
-        },
-      },
-      async (server) => t.equal(
-          (await request(server).get('/my-module.js')).text,
-          `import * as wubbleFlurp from 'wubble-flurp';`));
-});
-
-test('transforms resolvable specifier in inline module script', async (t) => {
-  t.plan(1);
-  createAndServe(
-      {
-        middleware: [nodeResolve(fixturesPath)],
-        routes: {
           '/my-page.html': `
             <script type="module">
             import * as x from 'x';
@@ -61,21 +34,33 @@ test('transforms resolvable specifier in inline module script', async (t) => {
           `,
         },
       },
-      async (server) => t.equal(
-          squeezeHTML((await request(server).get('/my-page.html')).text),
-          squeezeHTML(`
-            <script type="module">
-            import * as x from "./node_modules/x/main.js";
-            </script>
-          `)));
+      async (server) => {
+        t.equal(
+            squeeze((await request(server).get('/my-module.js')).text),
+            squeeze(`
+              import * as x from "./node_modules/x/main.js";
+            `),
+            'should transform specifiers in JavaScript module');
+        t.equal(
+            squeeze((await request(server).get('/my-page.html')).text),
+            squeeze(`
+              <script type="module">
+              import * as x from "./node_modules/x/main.js";
+              </script>
+            `),
+            'should transform specifiers in inline module script');
+      });
 });
 
-test('ignores unresolvable specifier in inline module script', async (t) => {
-  t.plan(1);
+test('ignores unresolvable specifiers', async (t) => {
+  t.plan(2);
   createAndServe(
       {
         middleware: [nodeResolve(fixturesPath)],
         routes: {
+          '/my-module.js': `
+            import * as wubbleFlurp from 'wubble-flurp';
+          `,
           '/my-page.html': `
             <script type="module">
             import * as wubbleFlurp from 'wubble-flurp';
@@ -83,11 +68,18 @@ test('ignores unresolvable specifier in inline module script', async (t) => {
           `,
         },
       },
-      async (server) => t.equal(
-          squeezeHTML((await request(server).get('/my-page.html')).text),
-          squeezeHTML(`
-            <script type="module">
-            import * as wubbleFlurp from 'wubble-flurp';
-            </script>
-          `)));
+      async (server) => {
+        t.equal(
+            squeeze((await request(server).get('/my-module.js')).text),
+            squeeze(`
+              import * as wubbleFlurp from 'wubble-flurp';
+        `));
+        t.equal(
+            squeeze((await request(server).get('/my-page.html')).text),
+            squeeze(`
+              <script type="module">
+              import * as wubbleFlurp from 'wubble-flurp';
+              </script>
+        `));
+      });
 });

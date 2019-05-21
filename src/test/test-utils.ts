@@ -55,11 +55,11 @@ export const serveApp =
   const server =
       app.listen(port).on('error', (e) => `ERROR: ${console.log(e)}`);
   await callback(server);
-  server.close();
+  await server.close();
 };
 
-export const squeezeHTML = (html: string): string => html.replace(/\s+/mg, ' ')
-                                                         .replace(/>\s</g, '><')
-                                                         .replace(/>\s/g, '>\n')
-                                                         .replace(/\s</g, '\n<')
-                                                         .trim();
+export const squeeze = (html: string): string => html.replace(/\s+/mg, ' ')
+                                                     .replace(/>\s</g, '><')
+                                                     .replace(/>\s/g, '>\n')
+                                                     .replace(/\s</g, '\n<')
+                                                     .trim();

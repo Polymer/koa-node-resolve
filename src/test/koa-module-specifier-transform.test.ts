@@ -1,0 +1,141 @@
+/**
+ * @license
+ * Copyright (c) 2019 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
+ * Code distributed by Google as part of the polymer project is also
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
+ */
+import request from 'supertest';
+import test from 'tape';
+
+import {moduleSpecifierTransform} from '../koa-module-specifier-transform';
+import {createAndServe, squeeze} from './test-utils';
+
+test('specifier transform returning `undefined` is a noop', async (t) => {
+  t.plan(2);
+  createAndServe(
+      {
+        middleware: [moduleSpecifierTransform(
+            (_baseURL, specifier) =>
+                specifier === 'y' ? './node_modules/y/index.js' : undefined)],
+        routes: {
+          '/my-module.js': `
+            import * as x from 'x';
+            import * as y from 'y';
+          `,
+          '/my-page.html': `
+            <script type="module">
+            import * as x from 'x';
+            import * as y from 'y';
+            </script>
+          `,
+        },
+      },
+      async (server) => {
+        t.equal(
+            squeeze((await request(server).get('/my-module.js')).text),
+            squeeze(`
+              import * as x from 'x';
+              import * as y from "./node_modules/y/index.js";
+            `),
+            'should transform defined specifiers and leave others alone');
+        t.equal(
+            squeeze((await request(server).get('/my-page.html')).text),
+            squeeze(`
+              <script type="module">
+              import * as x from 'x';
+              import * as y from "./node_modules/y/index.js";
+              </script>
+            `),
+            'should transform only defined specifiers in inline module script');
+      });
+});
+
+test('logs errors when parsing', async (t) => {
+  t.plan(3);
+  const errors: string[] = [];
+  const logger = {error: (...args: string[]) => errors.push(args.join(' '))};
+  createAndServe(
+      {
+        middleware: [moduleSpecifierTransform(
+            (_baseURL, _specifier) => undefined, {logger})],
+        routes: {
+          '/my-module.js': `
+            this is a syntax error;
+          `,
+          '/my-page.html': `
+            <script type="module">
+              this is syntax error;
+            </script>
+          `,
+        },
+      },
+      async (server) => {
+        t.equal(
+            squeeze((await request(server).get('/my-module.js')).text),
+            squeeze(`
+              this is a syntax error;
+            `),
+            'should leave a file with unparseable syntax error alone');
+        t.equal(
+            squeeze((await request(server).get('/my-page.html')).text),
+            squeeze(`
+              <script type="module">
+              this is syntax error;
+              </script>
+            `),
+            'should leave a file with unparseable inline module script alone');
+        t.deepEqual(errors, [
+          'SyntaxError: Unexpected token, expected ";" (2:17)',
+          'SyntaxError: Unexpected token, expected ";" (2:19)',
+        ]);
+      });
+});
+
+test('logs specifier transform error when transforming', async (t) => {
+  t.plan(3);
+  const errors: string[] = [];
+  const logger = {error: (...args: string[]) => errors.push(args.join(' '))};
+  createAndServe(
+      {
+        middleware: [moduleSpecifierTransform(
+            (_baseURL, _specifier) => {
+              throw new Error('whoopsie daisy');
+            },
+            {logger})],
+        routes: {
+          '/my-module.js': `
+            import * as wubbleFlurp from 'wubble-flurp';
+          `,
+          '/my-page.html': `
+            <script type="module">
+            import * as wubbleFlurp from 'wubble-flurp';
+            </script>
+          `,
+        },
+      },
+      async (server) => {
+        t.equal(
+            squeeze((await request(server).get('/my-module.js')).text),
+            squeeze(`
+              import * as wubbleFlurp from 'wubble-flurp';
+          `));
+        t.equal(
+            squeeze((await request(server).get('/my-page.html')).text),
+            squeeze(`
+              <script type="module">
+              import * as wubbleFlurp from 'wubble-flurp';
+              </script>
+          `));
+        t.deepEqual(errors, [
+          'Error: whoopsie daisy',
+          'Error: whoopsie daisy',
+        ]);
+      });
+});

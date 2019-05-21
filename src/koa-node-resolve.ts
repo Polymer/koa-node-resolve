@@ -15,7 +15,7 @@ import * as Koa from 'koa';
 import {resolve as resolvePath} from 'path';
 import {parse as parseURL} from 'url';
 
-import {moduleSpecifierTransform} from './koa-module-specifier-transform';
+import {moduleSpecifierTransform, ModuleSpecifierTransformOptions} from './koa-module-specifier-transform';
 import {noLeadingSlash} from './support/path-utils';
 import {resolveNodeSpecifier} from './support/resolve-node-specifier';
 
@@ -25,10 +25,12 @@ import {resolveNodeSpecifier} from './support/resolve-node-specifier';
  *     the root directory configured in your downstream static file server
  *     middleware.
  */
-export const nodeResolve = (root = '.'): Koa.Middleware =>
-    moduleSpecifierTransform(
+export const nodeResolve =
+    (root: string = '.', options: ModuleSpecifierTransformOptions = {}):
+        Koa.Middleware => moduleSpecifierTransform(
         (baseURL: string, specifier: string) => resolveNodeSpecifier(
             resolvePath(
                 resolvePath(root),
                 noLeadingSlash(parseURL(baseURL).pathname || '/')),
-            specifier));
+            specifier),
+        options);

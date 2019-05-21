@@ -28,7 +28,11 @@ export const transformJavaScriptModuleAST =
           if (path.node && path.node.source &&
               isStringLiteral(path.node.source)) {
             const specifier = path.node.source.value;
-            path.node.source.value = transformSpecifier(url, specifier);
+            const transformedSpecifier = transformSpecifier(url, specifier);
+            if (typeof transformedSpecifier === 'undefined') {
+              return;
+            }
+            path.node.source.value = transformedSpecifier;
           }
         }
       };
@@ -43,8 +47,11 @@ export const transformJavaScriptModuleAST =
                 isStringLiteral(path.node.arguments[0])) {
               const argument = path.node.arguments[0] as StringLiteral;
               const specifier = argument.value;
-              const rewrittenSpecifier = transformSpecifier(url, specifier);
-              argument.value = rewrittenSpecifier;
+              const transformedSpecifier = transformSpecifier(url, specifier);
+              if (typeof transformedSpecifier === 'undefined') {
+                return;
+              }
+              argument.value = transformedSpecifier;
             }
           }
         }

@@ -19,6 +19,12 @@ import {moduleSpecifierTransform} from './koa-module-specifier-transform';
 import {noLeadingSlash} from './support/path-utils';
 import {resolveNodeSpecifier} from './support/resolve-node-specifier';
 
+/**
+ * @param root The on-disk directory that maps to the served root URL, used to
+ *     resolve module specifiers in filesystem.  In most cases this should match
+ *     the root directory configured in your downstream static file server
+ *     middleware.
+ */
 export const nodeResolve = (root = '.'): Koa.Middleware =>
     moduleSpecifierTransform(
         (baseURL: string, specifier: string) => resolveNodeSpecifier(

@@ -1,0 +1,10 @@
+language: node_js
+node_js:
+  - "node"
+dist: xenial
+cache:
+  directories:
+    - node_modules
+script:
+  - npm run build
+  - npm test

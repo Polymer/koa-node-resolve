@@ -41,7 +41,7 @@ export const transformJavaScriptModuleAST =
             if (path.node && path.node.callee && isImport(path.node.callee) &&
                 path.node.arguments.length === 1 &&
                 isStringLiteral(path.node.arguments[0])) {
-              const argument = <StringLiteral>path.node.arguments[0];
+              const argument = path.node.arguments[0] as StringLiteral;
               const specifier = argument.value;
               const rewrittenSpecifier = transformSpecifier(url, specifier);
               argument.value = rewrittenSpecifier;

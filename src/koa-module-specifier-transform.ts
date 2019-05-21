@@ -20,20 +20,32 @@ import {transformJavaScriptModuleString} from './transform-javascript-module';
 export type TransformSpecifierFunction = (baseURL: string, specifier: string) =>
     string;
 
-export const moduleSpecifierTransform = (transformSpecifier:
-                                             TransformSpecifierFunction):
-                                            Koa.Middleware =>
-    async (ctx: Koa.Context, next: Function) => {
-  await next();
+export const moduleSpecifierTransform =
+    (transformSpecifier: TransformSpecifierFunction): Koa.Middleware =>
+        async (ctx: Koa.Context, next: Function) => {
+      await next();
 
-  if (ctx.response.is('html')) {
-    ctx.body = transformHTMLString(
-        await getBodyAsString(ctx.body), ctx.request.url, transformSpecifier);
-  } else if (ctx.response.is('js')) {
-    ctx.body = transformJavaScriptModuleString(
-        await getBodyAsString(ctx.body), ctx.request.url, transformSpecifier);
-  }
-};
+      // When the response is not HTML or JavaScript, we have nothing to
+      // transform.
+      if (!(ctx.response.is('html') || ctx.response.is('js'))) {
+        return;
+      }
+
+      const body = await getBodyAsString(ctx.body);
+
+      // When there's no body to return, there's nothing to transform.
+      if (!body) {
+        return;
+      }
+
+      if (ctx.response.is('html')) {
+        ctx.body =
+            transformHTMLString(body, ctx.request.url, transformSpecifier);
+      } else if (ctx.response.is('js')) {
+        ctx.body = transformJavaScriptModuleString(
+            body, ctx.request.url, transformSpecifier);
+      }
+    };
 
 // TODO(usergenic): This should probably be published as a separate npm package.
 const getBodyAsString = async(body: Buffer|Stream|string): Promise<string> => {
@@ -51,4 +63,4 @@ const getBodyAsString = async(body: Buffer|Stream|string): Promise<string> => {
 
 const isStream = (value: Buffer|Stream|string): value is Stream =>
     value !== null && typeof value === 'object' &&
-    typeof (<{pipe: Function | undefined}>value).pipe === 'function';
+    typeof (value as {pipe: Function | undefined}).pipe === 'function';

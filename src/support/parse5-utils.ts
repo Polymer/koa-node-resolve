@@ -110,8 +110,9 @@ export const insertNode =
       });
 
       if (removedNode && isChild(removedNode)) {
-        (<{parentNode: DefaultTreeParentNode | undefined}>removedNode)
-            .parentNode = undefined;
+        (removedNode as {
+          parentNode: DefaultTreeParentNode | undefined
+        }).parentNode = undefined;
       }
     };
 
@@ -172,8 +173,9 @@ export const removeFakeRootElements = (node: DefaultTreeNode) => {
   const fakeRootElements: DefaultTreeElement[] = [];
   nodeWalkAll(node, (node) => {
     if (node.nodeName && node.nodeName.match(/^(html|head|body)$/i) &&
-        !(<DefaultTreeElement&{sourceCodeLocation: Location | undefined}>node)
-             .sourceCodeLocation) {
+        !(node as DefaultTreeElement & {
+           sourceCodeLocation: Location | undefined
+         }).sourceCodeLocation) {
       fakeRootElements.unshift(node as DefaultTreeElement);
     }
     return false;

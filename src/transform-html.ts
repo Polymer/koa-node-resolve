@@ -36,7 +36,7 @@ export const transformHTMLString =
     (html: string,
      url: string,
      transformSpecifier: TransformSpecifierFunction) => {
-      const ast = <DefaultTreeNode>parse(html);
+      const ast = parse(html) as DefaultTreeNode;
       removeFakeRootElements(ast);
       transformHTMLAST(ast, url, transformSpecifier);
       return serialize(ast);

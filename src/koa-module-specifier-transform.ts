@@ -11,14 +11,29 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
+import babelSerialize from '@babel/generator';
+import {parse as babelParse} from '@babel/parser';
+import {Node as BabelNode} from '@babel/types';
 import getStream from 'get-stream';
 import * as Koa from 'koa';
+import {DefaultTreeNode as Parse5Node, parse as parse5Parse, serialize as parse5Serialize} from 'parse5';
 import {Stream} from 'stream';
-import {transformHTMLString} from './transform-html';
-import {transformJavaScriptModuleString} from './transform-javascript-module';
+
+import {removeFakeRootElements} from './support/parse5-utils';
+import {transformHTMLAST} from './transform-html-ast';
+import {transformJavaScriptModuleAST} from './transform-javascript-module-ast';
+
+export type HTMLASTTransformFunction = (ast: Parse5Node) => void;
+export type HTMLStringTransformFunction =
+    (html: string, transform: HTMLASTTransformFunction) => string;
+
+export type JavaScriptModuleASTTransformFunction = (ast: BabelNode) => void;
+export type JavaScriptModuleStringTransformFunction =
+    (js: string, transform: JavaScriptModuleASTTransformFunction) => string;
 
 export type TransformSpecifierFunction = (baseURL: string, specifier: string) =>
     string|undefined;
+
 export type Logger = {
   error?: Function,
   info?: Function,
@@ -26,13 +41,34 @@ export type Logger = {
 };
 
 export type ModuleSpecifierTransformOptions = {
-  logger?: Logger
+  logger?: Logger,
+  html?: HTMLStringTransformFunction,
+  js?: JavaScriptModuleStringTransformFunction,
 };
+
+const defaultHTMLStringTransformer =
+    (html: string, transform: HTMLASTTransformFunction) => {
+      const ast = parse5Parse(html) as Parse5Node;
+      removeFakeRootElements(ast);
+      transform(ast);
+      return parse5Serialize(ast);
+    };
+
+const defaultJavaScriptModuleStringTransformer =
+    (js: string, transform: JavaScriptModuleASTTransformFunction) => {
+      const leadingSpace = js.match(/^\s*/)![0];
+      const trailingSpace = js.match(/\s*$/)![0];
+      const ast = babelParse(js, {sourceType: 'unambiguous'}) as BabelNode;
+      transform(ast);
+      return leadingSpace + babelSerialize(ast).code + trailingSpace;
+    };
 
 export const moduleSpecifierTransform =
     (transformSpecifier: TransformSpecifierFunction,
      options: ModuleSpecifierTransformOptions = {}): Koa.Middleware => {
       const logger = options.logger || console;
+      const html = options.html || defaultHTMLStringTransformer;
+      const js = options.js || defaultJavaScriptModuleStringTransformer;
 
       return async (ctx: Koa.Context, next: Function) => {
         await next();
@@ -44,19 +80,21 @@ export const moduleSpecifierTransform =
         }
 
         const body = await getBodyAsString(ctx.body);
-
         // When there's no body to return, there's nothing to transform.
         if (!body) {
           return;
         }
 
         try {
+          const url = ctx.request.url;
           if (ctx.response.is('html')) {
-            ctx.body =
-                transformHTMLString(body, ctx.request.url, transformSpecifier);
+            ctx.body = html(body, (ast) => {
+              transformHTMLAST(ast, url, transformSpecifier, js);
+            });
           } else if (ctx.response.is('js')) {
-            ctx.body = transformJavaScriptModuleString(
-                body, ctx.request.url, transformSpecifier);
+            ctx.body = js(body, (ast) => {
+              transformJavaScriptModuleAST(ast, url, transformSpecifier);
+            });
           }
         } catch (error) {
           if (logger.error) {

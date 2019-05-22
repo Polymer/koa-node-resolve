@@ -11,8 +11,6 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import serialize from '@babel/generator';
-import {parse} from '@babel/parser';
 import traverse from '@babel/traverse';
 import {NodePath} from '@babel/traverse';
 import {CallExpression, ExportAllDeclaration, ExportNamedDeclaration, ImportDeclaration, isImport, isStringLiteral, Node, StringLiteral} from '@babel/types';
@@ -57,13 +55,3 @@ export const transformJavaScriptModuleAST =
         }
       });
     };
-
-export const transformJavaScriptModuleString =
-    (js: string, url: string, transformSpecifier: TransformSpecifierFunction):
-        string => {
-          const ast = parse(js, {sourceType: 'unambiguous'});
-          const leadingSpace = js.match(/^\s*/)![0];
-          const trailingSpace = js.match(/\s*$/)![0];
-          transformJavaScriptModuleAST(ast, url, transformSpecifier);
-          return leadingSpace + serialize(ast).code + trailingSpace;
-        };

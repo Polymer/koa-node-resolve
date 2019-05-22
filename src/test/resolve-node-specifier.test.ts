@@ -22,7 +22,7 @@ const fixturesPath =
 const resolve = (specifier: string): string =>
     resolveNodeSpecifier(fixturesPath, specifier);
 
-test('resolve package name', (t) => {
+test('resolveNodeSpecifier resolves package name', (t) => {
   t.plan(3);
   t.equal(
       resolve('x'),
@@ -38,7 +38,7 @@ test('resolve package name', (t) => {
       'should resolve to `package.json` "module"');
 });
 
-test('resolve extension-less module subpath', (t) => {
+test('resolveNodeSpecifier resolves extension-less module subpath', (t) => {
   t.plan(3);
   t.equal(
       resolve('z/jsnext'),
@@ -54,7 +54,7 @@ test('resolve extension-less module subpath', (t) => {
       'should resolve to `.node` extension');
 });
 
-test('resolve extension-less relative path', (t) => {
+test('resolveNodeSpecifier resolves extension-less relative path', (t) => {
   t.plan(3);
   t.equal(
       resolve('./node_modules/z/jsnext'),

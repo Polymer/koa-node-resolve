@@ -32,6 +32,7 @@ Create your own mini-development server in file `./dev-server.js`. This one depe
 const Koa = require('koa');
 const staticFiles = require('koa-static');
 const { nodeResolve } = require('koa-node-resolve');
+
 const server = new Koa()
   .use(nodeResolve())
   .use(staticFiles('.'))
@@ -44,6 +45,56 @@ $ node dev-server.js
 
 Now you can serve up your web assets and Node package specifiers will be transformed on request.
 
+## Configuration
+
+`nodeResolve(root, options={})`
+
+### Options
+
+ - `logger` an alternative logger to use (`console` is the default).
+ - `html` an alternate parse/serialize strategy function for HTML documents of the following form:
+    ```js
+    (html: string, transform: (ast: parse5.DefaultTreeNode) => void) => string
+    ```
+    The `transform` parameter is a function that takes as its paramter a `DefaultTreeNode` from the `parse5` package.  The purpose of the strategy function is to allow customization of the parsing, processing and serializing of HTML content encountered by the middleware.  The default behavior is represented below:
+    ```js
+    import { removeFakeRootElements} from 'koa-node-resolve/lib/support/parse5-utils.js';
+    const parse5 = require('parse5');
+    
+    // Default HTML transform strategy:
+    (html, transform) => {
+      const ast = parse5.parse(html);
+      // The `parse5` library adds "synthetic" html, head and body elements
+      // when it parses a document that doesn't contain them.  This function
+      // removes these synthetic elements to preserve the literal form of
+      // content that passes through the middleware.
+      removeFakeRootElements(ast);
+      transform(ast);
+      return parse5.serialize(ast);
+    }
+    ```
+
+ - `js` an alternate parse/serialize strategy function for JavaScript modules.  Takes the form:
+    ```js
+    (js, transform) => serialize(transform(parse(js)))
+    ```
+    The `transform` parameter is a function that takes as its parameter a `Node` from the `babel` package.  The purpose of the strategy function is to allow customization of the parsing, processing and serializing of the JavaScript module content encountered by the middleware.  The default behavior is represented below:
+    ```js
+    const parser = require('@babel/parse');
+    const serialize = require('@babel/generator');
+    (js, transform) => {
+      // Babel's parser ignores the leading/trailing space, so if we want to
+      // preserve the actual layout of the content, we have to capture the
+      // whitespace and rewrap the serialized code on the way out.
+      const leadingSpace = js.match(/^\s*/)![0];
+      const trailingSpace = js.match(/\s*$/)![0];
+      const ast = parser.parse(js, {sourceType: 'unambiguous'});
+      transform(ast);
+      return leadingSpace + serialize(ast).code + trailingSpace;
+    }
+    ```
+    The most common reason to define your own JavaScript transform strategy is to parse using babel syntax plugins that your project is making use of, such as decorators, dynamic imports or import meta etc.
+
 ## Karma Testing Setup
 
 In a `karma` setup, your `karma.conf.js` file could create the Koa server before exporting the config. The Koa server uses the `koa-proxy` package (therefore `npm install --save-dev koa-proxy`) in between the browser and the Karma server, transforming all the Node package specifiers encountered in documents located under the `base/` URL namespace, which is a special Karma behavior for partitioning the package resources under test from Karma support resources.
@@ -53,6 +104,7 @@ const Koa = require('koa');
 const mount = require('koa-mount');
 const proxy = require('koa-proxy');
 const { nodeResolve } = require('koa-node-resolve');
+
 const server = new Koa()
   .use(mount('/base', nodeResolve()))
   .use(proxy({ host: 'http://127.0.0.1:9876' }))

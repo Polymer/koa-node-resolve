@@ -20,7 +20,7 @@ import {createAndServe, squeeze} from './test-utils';
 
 const fixturesPath = resolvePath(__dirname, '../../test/fixtures/');
 
-test('transforms resolvable specifiers', async (t) => {
+test('nodeResolve middleware transforms resolvable specifiers', async (t) => {
   t.plan(2);
   createAndServe(
       {
@@ -52,7 +52,7 @@ test('transforms resolvable specifiers', async (t) => {
       });
 });
 
-test('ignores unresolvable specifiers', async (t) => {
+test('nodeResolve middleware ignores unresolvable specifiers', async (t) => {
   t.plan(2);
   createAndServe(
       {
@@ -73,13 +73,15 @@ test('ignores unresolvable specifiers', async (t) => {
             squeeze((await request(server).get('/my-module.js')).text),
             squeeze(`
               import * as wubbleFlurp from 'wubble-flurp';
-        `));
+            `),
+            'should leave unresolvable specifier in external scripts alone');
         t.equal(
             squeeze((await request(server).get('/my-page.html')).text),
             squeeze(`
               <script type="module">
               import * as wubbleFlurp from 'wubble-flurp';
               </script>
-        `));
+            `),
+            'should leave unresolvable specifier in inline scripts alone');
       });
 });

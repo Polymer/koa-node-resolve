@@ -17,7 +17,7 @@ import test from 'tape';
 import {moduleSpecifierTransform} from '../koa-module-specifier-transform';
 import {createAndServe, squeeze} from './test-utils';
 
-test('specifier transform returning `undefined` is a noop', async (t) => {
+test('moduleSpecifierTransform callback returns undefined to noop', async (t) => {
   t.plan(2);
   createAndServe(
       {
@@ -44,7 +44,7 @@ test('specifier transform returning `undefined` is a noop', async (t) => {
               import * as x from 'x';
               import * as y from "./node_modules/y/index.js";
             `),
-            'should transform defined specifiers and leave others alone');
+            'should transform only defined specifiers in external module');
         t.equal(
             squeeze((await request(server).get('/my-page.html')).text),
             squeeze(`
@@ -57,7 +57,7 @@ test('specifier transform returning `undefined` is a noop', async (t) => {
       });
 });
 
-test('logs errors when parsing', async (t) => {
+test('moduleSpecifierTransform middleware logs errors', async (t) => {
   t.plan(3);
   const errors: string[] = [];
   const logger = {error: (...args: string[]) => errors.push(args.join(' '))};
@@ -91,14 +91,17 @@ test('logs errors when parsing', async (t) => {
               </script>
             `),
             'should leave a file with unparseable inline module script alone');
-        t.deepEqual(errors, [
-          'SyntaxError: Unexpected token, expected ";" (2:17)',
-          'SyntaxError: Unexpected token, expected ";" (2:19)',
-        ]);
+        t.deepEqual(
+            errors,
+            [
+              'SyntaxError: Unexpected token, expected ";" (2:17)',
+              'SyntaxError: Unexpected token, expected ";" (2:19)',
+            ],
+            'should log every error thrown');
       });
 });
 
-test('logs specifier transform error when transforming', async (t) => {
+test('moduleSpecifierTransform middleware logs callback error', async (t) => {
   t.plan(3);
   const errors: string[] = [];
   const logger = {error: (...args: string[]) => errors.push(args.join(' '))};
@@ -125,17 +128,22 @@ test('logs specifier transform error when transforming', async (t) => {
             squeeze((await request(server).get('/my-module.js')).text),
             squeeze(`
               import * as wubbleFlurp from 'wubble-flurp';
-          `));
+            `),
+            'should not transform the external script when error occurs');
         t.equal(
             squeeze((await request(server).get('/my-page.html')).text),
             squeeze(`
               <script type="module">
               import * as wubbleFlurp from 'wubble-flurp';
               </script>
-          `));
-        t.deepEqual(errors, [
-          'Error: whoopsie daisy',
-          'Error: whoopsie daisy',
-        ]);
+            `),
+            'should not transform inline script when error occurs');
+        t.deepEqual(
+            errors,
+            [
+              'Error: whoopsie daisy',
+              'Error: whoopsie daisy',
+            ],
+            'should log every error thrown');
       });
 });

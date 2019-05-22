@@ -11,35 +11,27 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import {DefaultTreeNode, parse, serialize} from 'parse5';
+import {DefaultTreeNode} from 'parse5';
 import {resolve as resolveURL} from 'url';
 
-import {TransformSpecifierFunction} from './koa-module-specifier-transform';
-import {getAttr, getTextContent, nodeWalkAll, removeFakeRootElements, setTextContent} from './support/parse5-utils';
-import {transformJavaScriptModuleString} from './transform-javascript-module';
+import {JavaScriptModuleStringTransformFunction, TransformSpecifierFunction} from './koa-module-specifier-transform';
+import {getAttr, getTextContent, nodeWalkAll, setTextContent} from './support/parse5-utils';
+import {transformJavaScriptModuleAST} from './transform-javascript-module-ast';
 
 export const transformHTMLAST =
     (ast: DefaultTreeNode,
      url: string,
-     transformSpecifier: TransformSpecifierFunction) => {
+     transformSpecifier: TransformSpecifierFunction,
+     transformJavaScriptModule: JavaScriptModuleStringTransformFunction) => {
       const baseURL = getBaseURL(ast, url);
-      getInlineModuleScripts(ast).forEach((scriptTag) => {
-        const js = getTextContent(scriptTag);
-        const transformedJs =
-            transformJavaScriptModuleString(js, baseURL, transformSpecifier);
-        setTextContent(scriptTag, transformedJs);
-      });
+      getInlineModuleScripts(ast).forEach(
+          (scriptTag) => setTextContent(
+              scriptTag,
+              transformJavaScriptModule(
+                  getTextContent(scriptTag),
+                  (ast) => transformJavaScriptModuleAST(
+                      ast, baseURL, transformSpecifier))));
       return;
-    };
-
-export const transformHTMLString =
-    (html: string,
-     url: string,
-     transformSpecifier: TransformSpecifierFunction) => {
-      const ast = parse(html) as DefaultTreeNode;
-      removeFakeRootElements(ast);
-      transformHTMLAST(ast, url, transformSpecifier);
-      return serialize(ast);
     };
 
 const getBaseURL = (ast: DefaultTreeNode, location: string): string => {

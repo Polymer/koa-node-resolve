@@ -35,7 +35,7 @@
     "@types/get-stream": "^3.0.2",
     "@types/koa": "^2.0.48",
     "@types/koa-route": "^3.2.4",
-    "@types/node": "^12.0.0",
+    "@types/node": "^12.0.2",
     "@types/parse5": "^5.0.0",
     "@types/path-is-inside": "^1.0.0",
     "@types/resolve": "0.0.8",
@@ -56,7 +56,7 @@
   "dependencies": {
     "@babel/generator": "^7.4.4",
     "@babel/parser": "^7.4.5",
-    "@babel/traverse": "^7.4.4",
+    "@babel/traverse": "^7.4.5",
     "get-stream": "^5.1.0",
     "parse5": "^5.1.0",
     "resolve": "^1.11.0"

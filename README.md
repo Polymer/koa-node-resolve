@@ -56,7 +56,7 @@ Now you can serve up your web assets and Node package specifiers will be transfo
  - `htmlParser` function to convert HTML source to a `Parse5.DefaultTreeNode`.  The default implementation is equivalent to:
     ```js
     const { parse } = require('parse5');
-    import { removeFakeRootElements } = './support/parse5-utils';
+    import { removeFakeRootElements } = 'koa-node-resolve/lib/support/parse5-utils';
 
     nodeResolve({ htmlParser: (source) => {
       const ast = parse(source);

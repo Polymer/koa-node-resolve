@@ -63,8 +63,8 @@ Now you can serve up your web assets and Node package specifiers will be transfo
     const parse5 = require('parse5');
     const nodeResolve = require('koa-node-resolve');
 
-    nodeResolve({html: (html, transform) => {
-      const ast = parse5.parse(html);
+    nodeResolve({html: (soruce, transform) => {
+      const ast = parse5.parse(source);
       // The `parse5` library adds "synthetic" html, head and body elements
       // when it parses a document that doesn't contain them.  This function
       // removes these synthetic elements to preserve the literal form of

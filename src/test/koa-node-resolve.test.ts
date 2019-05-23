@@ -24,7 +24,7 @@ test('nodeResolve middleware transforms resolvable specifiers', async (t) => {
   t.plan(2);
   createAndServe(
       {
-        middleware: [nodeResolve(fixturesPath)],
+        middleware: [nodeResolve({root: fixturesPath})],
         routes: {
           '/my-module.js': `import * as x from 'x';`,
           '/my-page.html': `
@@ -56,7 +56,7 @@ test('nodeResolve middleware ignores unresolvable specifiers', async (t) => {
   t.plan(2);
   createAndServe(
       {
-        middleware: [nodeResolve(fixturesPath)],
+        middleware: [nodeResolve({root: fixturesPath})],
         routes: {
           '/my-module.js': `
             import * as wubbleFlurp from 'wubble-flurp';

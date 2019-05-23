@@ -20,18 +20,19 @@ import {DefaultTreeNode as Parse5Node, parse as parse5Parse, serialize as parse5
 import {Stream} from 'stream';
 
 import {removeFakeRootElements} from './support/parse5-utils';
-import {transformHTMLAST} from './transform-html-ast';
-import {transformJavaScriptModuleAST} from './transform-javascript-module-ast';
+import {preserveOriginalWhitespaceBuffer} from './support/string-utils';
+import {transformHTML} from './transform-html';
+import {transformJSModule} from './transform-js-module';
 
-export type HTMLASTTransformFunction = (ast: Parse5Node) => void;
-export type HTMLStringTransformFunction =
-    (html: string, transform: HTMLASTTransformFunction) => string;
+export type HTMLASTTransform = (ast: Parse5Node) => void;
+export type HTMLSourceTransform = (html: string, transform: HTMLASTTransform) =>
+    string;
 
-export type JavaScriptModuleASTTransformFunction = (ast: BabelNode) => void;
-export type JavaScriptModuleStringTransformFunction =
-    (js: string, transform: JavaScriptModuleASTTransformFunction) => string;
+export type JSModuleASTTransform = (ast: BabelNode) => void;
+export type JSModuleSourceTransform =
+    (js: string, transform: JSModuleASTTransform) => string;
 
-export type TransformSpecifierFunction = (baseURL: string, specifier: string) =>
+export type SpecifierTransform = (baseURL: string, specifier: string) =>
     string|undefined;
 
 export type Logger = {
@@ -42,33 +43,31 @@ export type Logger = {
 
 export type ModuleSpecifierTransformOptions = {
   logger?: Logger,
-  html?: HTMLStringTransformFunction,
-  js?: JavaScriptModuleStringTransformFunction,
+  html?: HTMLSourceTransform,
+  js?: JSModuleSourceTransform,
 };
 
-const defaultHTMLStringTransformer =
-    (html: string, transform: HTMLASTTransformFunction) => {
+const defaultHTMLSourceTransform =
+    (html: string, transform: HTMLASTTransform) => {
       const ast = parse5Parse(html) as Parse5Node;
       removeFakeRootElements(ast);
       transform(ast);
       return parse5Serialize(ast);
     };
 
-const defaultJavaScriptModuleStringTransformer =
-    (js: string, transform: JavaScriptModuleASTTransformFunction) => {
-      const leadingSpace = js.match(/^\s*/)![0];
-      const trailingSpace = js.match(/\s*$/)![0];
+const defaultJSModuleSourceTransform =
+    (js: string, transform: JSModuleASTTransform) => {
       const ast = babelParse(js, {sourceType: 'unambiguous'}) as BabelNode;
       transform(ast);
-      return leadingSpace + babelSerialize(ast).code + trailingSpace;
+      return babelSerialize(ast).code;
     };
 
 export const moduleSpecifierTransform =
-    (transformSpecifier: TransformSpecifierFunction,
+    (specifierTransform: SpecifierTransform,
      options: ModuleSpecifierTransformOptions = {}): Koa.Middleware => {
       const logger = options.logger || console;
-      const html = options.html || defaultHTMLStringTransformer;
-      const js = options.js || defaultJavaScriptModuleStringTransformer;
+      const html = options.html || defaultHTMLSourceTransform;
+      const js = options.js || defaultJSModuleSourceTransform;
 
       return async (ctx: Koa.Context, next: Function) => {
         await next();
@@ -88,13 +87,15 @@ export const moduleSpecifierTransform =
         try {
           const url = ctx.request.url;
           if (ctx.response.is('html')) {
-            ctx.body = html(body, (ast) => {
-              transformHTMLAST(ast, url, transformSpecifier, js);
-            });
+            ctx.body = preserveOriginalWhitespaceBuffer(
+                body, html(body, (ast) => {
+                  transformHTML(ast, url, specifierTransform, js);
+                }));
           } else if (ctx.response.is('js')) {
-            ctx.body = js(body, (ast) => {
-              transformJavaScriptModuleAST(ast, url, transformSpecifier);
-            });
+            ctx.body = preserveOriginalWhitespaceBuffer(
+                body, js(body, (ast) => {
+                  transformJSModule(ast, url, specifierTransform);
+                }));
           }
         } catch (error) {
           if (logger.error) {

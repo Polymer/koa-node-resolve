@@ -14,23 +14,26 @@
 import {DefaultTreeNode} from 'parse5';
 import {resolve as resolveURL} from 'url';
 
-import {JavaScriptModuleStringTransformFunction, TransformSpecifierFunction} from './koa-module-specifier-transform';
+import {JSModuleSourceTransform, SpecifierTransform} from './koa-module-specifier-transform';
 import {getAttr, getTextContent, nodeWalkAll, setTextContent} from './support/parse5-utils';
-import {transformJavaScriptModuleAST} from './transform-javascript-module-ast';
+import {preserveOriginalWhitespaceBuffer} from './support/string-utils';
+import {transformJSModule} from './transform-js-module';
 
-export const transformHTMLAST =
+export const transformHTML =
     (ast: DefaultTreeNode,
      url: string,
-     transformSpecifier: TransformSpecifierFunction,
-     transformJavaScriptModule: JavaScriptModuleStringTransformFunction) => {
+     specifierTransform: SpecifierTransform,
+     jsModuleTransform: JSModuleSourceTransform) => {
       const baseURL = getBaseURL(ast, url);
-      getInlineModuleScripts(ast).forEach(
-          (scriptTag) => setTextContent(
-              scriptTag,
-              transformJavaScriptModule(
-                  getTextContent(scriptTag),
-                  (ast) => transformJavaScriptModuleAST(
-                      ast, baseURL, transformSpecifier))));
+      getInlineModuleScripts(ast).forEach((scriptTag) => {
+        const originalJS = getTextContent(scriptTag);
+        const transformedJS = preserveOriginalWhitespaceBuffer(
+            originalJS,
+            jsModuleTransform(
+                originalJS,
+                (ast) => transformJSModule(ast, baseURL, specifierTransform)));
+        setTextContent(scriptTag, transformedJS);
+      });
       return;
     };
 

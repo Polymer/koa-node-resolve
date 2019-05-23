@@ -14,19 +14,17 @@
 import traverse from '@babel/traverse';
 import {NodePath} from '@babel/traverse';
 import {CallExpression, ExportAllDeclaration, ExportNamedDeclaration, ImportDeclaration, isImport, isStringLiteral, Node, StringLiteral} from '@babel/types';
-import {TransformSpecifierFunction} from './koa-module-specifier-transform';
+import {SpecifierTransform} from './koa-module-specifier-transform';
 
-export const transformJavaScriptModuleAST =
-    (ast: Node,
-     url: string,
-     transformSpecifier: TransformSpecifierFunction) => {
+export const transformJSModule =
+    (ast: Node, url: string, specifierTransform: SpecifierTransform) => {
       const importExportDeclaration = {
         enter(path: NodePath<ImportDeclaration|ExportAllDeclaration|
                              ExportNamedDeclaration>) {
           if (path.node && path.node.source &&
               isStringLiteral(path.node.source)) {
             const specifier = path.node.source.value;
-            const transformedSpecifier = transformSpecifier(url, specifier);
+            const transformedSpecifier = specifierTransform(url, specifier);
             if (typeof transformedSpecifier === 'undefined') {
               return;
             }
@@ -45,7 +43,7 @@ export const transformJavaScriptModuleAST =
                 isStringLiteral(path.node.arguments[0])) {
               const argument = path.node.arguments[0] as StringLiteral;
               const specifier = argument.value;
-              const transformedSpecifier = transformSpecifier(url, specifier);
+              const transformedSpecifier = specifierTransform(url, specifier);
               if (typeof transformedSpecifier === 'undefined') {
                 return;
               }

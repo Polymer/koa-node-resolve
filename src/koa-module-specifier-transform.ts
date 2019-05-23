@@ -24,13 +24,17 @@ import {preserveOriginalWhitespaceBuffer} from './support/string-utils';
 import {transformHTML} from './transform-html';
 import {transformJSModule} from './transform-js-module';
 
-export type HTMLASTTransform = (ast: Parse5Node) => void;
-export type HTMLSourceTransform = (html: string, transform: HTMLASTTransform) =>
+export type HTMLASTTransform = (ast: Parse5Node) => Parse5Node;
+export type HTMLSourceStrategy = (html: string, transform: HTMLASTTransform) =>
     string;
+export type HTMLParser = (html: string) => Parse5Node;
+export type HTMLSerializer = (ast: Parse5Node) => string;
 
-export type JSModuleASTTransform = (ast: BabelNode) => void;
-export type JSModuleSourceTransform =
+export type JSModuleASTTransform = (ast: BabelNode) => BabelNode;
+export type JSModuleSourceStrategy =
     (js: string, transform: JSModuleASTTransform) => string;
+export type JSParser = (js: string) => BabelNode;
+export type JSSerializer = (ast: BabelNode) => string;
 
 export type SpecifierTransform = (baseURL: string, specifier: string) =>
     string|undefined;
@@ -43,31 +47,34 @@ export type Logger = {
 
 export type ModuleSpecifierTransformOptions = {
   logger?: Logger,
-  html?: HTMLSourceTransform,
-  js?: JSModuleSourceTransform,
+  htmlParser?: HTMLParser,
+  htmlSerializer?: HTMLSerializer,
+  jsParser?: JSParser,
+  jsSerializer?: JSSerializer,
 };
 
-const defaultHTMLSourceTransform =
-    (html: string, transform: HTMLASTTransform) => {
-      const ast = parse5Parse(html) as Parse5Node;
-      removeFakeRootElements(ast);
-      transform(ast);
-      return parse5Serialize(ast);
-    };
+const defaultHTMLParser = (html: string): Parse5Node => {
+  const ast = parse5Parse(html) as Parse5Node;
+  removeFakeRootElements(ast);
+  return ast;
+};
 
-const defaultJSModuleSourceTransform =
-    (js: string, transform: JSModuleASTTransform) => {
-      const ast = babelParse(js, {sourceType: 'unambiguous'}) as BabelNode;
-      transform(ast);
-      return babelSerialize(ast).code;
-    };
+const defaultHTMLSerializer = (ast: Parse5Node): string => parse5Serialize(ast);
+
+const defaultJSParser = (js: string): BabelNode =>
+    babelParse(js, {sourceType: 'unambiguous'}) as BabelNode;
+
+const defaultJSSerializer = (ast: BabelNode): string =>
+    babelSerialize(ast).code;
 
 export const moduleSpecifierTransform =
     (specifierTransform: SpecifierTransform,
      options: ModuleSpecifierTransformOptions = {}): Koa.Middleware => {
       const logger = options.logger || console;
-      const html = options.html || defaultHTMLSourceTransform;
-      const js = options.js || defaultJSModuleSourceTransform;
+      const htmlParser = options.htmlParser || defaultHTMLParser;
+      const htmlSerializer = options.htmlSerializer || defaultHTMLSerializer;
+      const jsParser = options.jsParser || defaultJSParser;
+      const jsSerializer = options.jsSerializer || defaultJSSerializer;
 
       return async (ctx: Koa.Context, next: Function) => {
         await next();
@@ -84,18 +91,30 @@ export const moduleSpecifierTransform =
           return;
         }
 
+        const url = ctx.request.url;
+
+        const htmlSourceStrategy =
+            (html: string, transform: HTMLASTTransform): string =>
+                htmlSerializer(transform(htmlParser(html)));
+
+        const jsSourceStrategy =
+            (js: string, transform: JSModuleASTTransform): string =>
+                jsSerializer(transform(jsParser(js)));
+
         try {
-          const url = ctx.request.url;
           if (ctx.response.is('html')) {
             ctx.body = preserveOriginalWhitespaceBuffer(
-                body, html(body, (ast) => {
-                  transformHTML(ast, url, specifierTransform, js);
-                }));
+                body,
+                htmlSourceStrategy(
+                    body,
+                    (ast) => transformHTML(
+                        ast, url, specifierTransform, jsSourceStrategy)));
           } else if (ctx.response.is('js')) {
             ctx.body = preserveOriginalWhitespaceBuffer(
-                body, js(body, (ast) => {
-                  transformJSModule(ast, url, specifierTransform);
-                }));
+                body,
+                jsSourceStrategy(
+                    body,
+                    (ast) => transformJSModule(ast, url, specifierTransform)));
           }
         } catch (error) {
           if (logger.error) {

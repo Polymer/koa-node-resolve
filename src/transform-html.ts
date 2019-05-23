@@ -14,7 +14,7 @@
 import {DefaultTreeNode} from 'parse5';
 import {resolve as resolveURL} from 'url';
 
-import {JSModuleSourceTransform, SpecifierTransform} from './koa-module-specifier-transform';
+import {JSModuleSourceStrategy, SpecifierTransform} from './koa-module-specifier-transform';
 import {getAttr, getTextContent, nodeWalkAll, setTextContent} from './support/parse5-utils';
 import {preserveOriginalWhitespaceBuffer} from './support/string-utils';
 import {transformJSModule} from './transform-js-module';
@@ -23,7 +23,7 @@ export const transformHTML =
     (ast: DefaultTreeNode,
      url: string,
      specifierTransform: SpecifierTransform,
-     jsModuleTransform: JSModuleSourceTransform) => {
+     jsModuleTransform: JSModuleSourceStrategy): DefaultTreeNode => {
       const baseURL = getBaseURL(ast, url);
       getInlineModuleScripts(ast).forEach((scriptTag) => {
         const originalJS = getTextContent(scriptTag);
@@ -34,7 +34,7 @@ export const transformHTML =
                 (ast) => transformJSModule(ast, baseURL, specifierTransform)));
         setTextContent(scriptTag, transformedJS);
       });
-      return;
+      return ast;
     };
 
 const getBaseURL = (ast: DefaultTreeNode, location: string): string => {

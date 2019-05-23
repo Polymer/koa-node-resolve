@@ -17,7 +17,7 @@ import {CallExpression, ExportAllDeclaration, ExportNamedDeclaration, ImportDecl
 import {SpecifierTransform} from './koa-module-specifier-transform';
 
 export const transformJSModule =
-    (ast: Node, url: string, specifierTransform: SpecifierTransform) => {
+    (ast: Node, url: string, specifierTransform: SpecifierTransform): Node => {
       const importExportDeclaration = {
         enter(path: NodePath<ImportDeclaration|ExportAllDeclaration|
                              ExportNamedDeclaration>) {
@@ -52,4 +52,5 @@ export const transformJSModule =
           }
         }
       });
+      return ast;
     };

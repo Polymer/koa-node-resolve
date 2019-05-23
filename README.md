@@ -53,45 +53,40 @@ Now you can serve up your web assets and Node package specifiers will be transfo
 
  - `root` the on-disk directory that maps to the served root URL, used to resolve module specifiers in filesystem.  In most cases this should match the root directory configured in your downstream static file server middleware.
  - `logger` an alternative logger to use (`console` is the default).
- - `html` an alternate parse/serialize strategy function for HTML documents of the following form:
+ - `htmlParser` function to convert HTML source to a `Parse5.DefaultTreeNode`.  The default implementation is equivalent to:
     ```js
-    (source: string, transform: (ast: parse5.DefaultTreeNode) => void) => string
-    ```
-    The `transform` parameter is a function that takes as its paramter a `DefaultTreeNode` from the `parse5` package.  The purpose of the strategy function is to allow customization of the parsing, pre-processing and serializing of HTML content encountered by the middleware.  The default behavior is represented below:
-    ```js
-    import { removeFakeRootElements} from 'koa-node-resolve/lib/support/parse5-utils.js';
-    const parse5 = require('parse5');
-    const nodeResolve = require('koa-node-resolve');
+    const { parse } = require('parse5');
 
-    nodeResolve({html: (soruce, transform) => {
-      const ast = parse5.parse(source);
-      // The `parse5` library adds "synthetic" html, head and body elements
-      // when it parses a document that doesn't contain them.  This function
-      // removes these synthetic elements to preserve the literal form of
-      // content that passes through the middleware.
+    nodeResolve({ htmlParser: (source) => {
+      const ast = parse(source);
+      // Stop parse5 from creating <html>, <head> and <body> tags.
       removeFakeRootElements(ast);
-      transform(ast);
-      return parse5.serialize(ast);
-    }});
+      return ast;
+    });
     ```
+ - `htmlSerializer` function to generate string from AST of `Parse5.DefaultTreeNode`.  The default implementation is equivalent to:
+    ```js
+    const { serialize } = require('parse5');
 
- - `js` an alternate parse/serialize strategy function for JavaScript modules.  Takes the form:
-    ```js
-    (source: string, transform: (ast: babel.Node) => void) => string
+    nodeResolve({ htmlSerializer: serialize });
     ```
-    The `transform` parameter is a function that takes as its parameter a `Node` from the `babel` package.  The purpose of the strategy function is to allow customization of the parsing, processing and serializing of the JavaScript module content encountered by the middleware.  The default behavior is represented below:
+ - `jsParser` function to convert JavaScript module source to a `Babel.Node`.  The default implementation is equivalent to:
     ```js
-    const parser = require('@babel/parse');
+    const { parse } = require('@babel/parse');
+
+    nodeResolve({
+      jsParser: (source) => parse(source, {
+        sourceType: 'unambiguous'
+      })
+    });
+    ```
+    The most common reason to provide your own JavaScript parser function is to enable the middleware to process content which has syntax requiring babel syntax plugins that your project is making use of, such as decorators, dynamic imports or import meta etc.
+
+ - `jsSerializer` function to generate string from AST of `Babel.Node`.  The default implementation is equivalent to:
+    ```js
     const serialize = require('@babel/generator');
-    const nodeResolve = require('koa-node-resolve');
 
-    nodeResolve({js: (source, transform) => {
-      const ast = parser.parse(source, {sourceType: 'unambiguous'});
-      transform(ast);
-      return serialize(ast).code;
-    }})
-    ```
-    The most common reason to define your own JavaScript transform strategy is to parse using babel syntax plugins that your project is making use of, such as decorators, dynamic imports or import meta etc. 
+    nodeResolve({ jsSerializer: (ast) => serialize(ast).code })
 
 ## Karma Testing Setup
 

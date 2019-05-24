@@ -16,7 +16,7 @@ import {resolve as resolveURL} from 'url';
 
 import {JSModuleSourceStrategy, SpecifierTransform} from './koa-module-specifier-transform';
 import {getAttr, getTextContent, nodeWalkAll, setTextContent} from './support/parse5-utils';
-import {preserveOriginalWhitespaceBuffer} from './support/string-utils';
+import {preserveSurroundingWhitespace} from './support/string-utils';
 import {transformJSModule} from './transform-js-module';
 
 export const transformHTML =
@@ -27,7 +27,7 @@ export const transformHTML =
       const baseURL = getBaseURL(ast, url);
       getInlineModuleScripts(ast).forEach((scriptTag) => {
         const originalJS = getTextContent(scriptTag);
-        const transformedJS = preserveOriginalWhitespaceBuffer(
+        const transformedJS = preserveSurroundingWhitespace(
             originalJS,
             jsModuleTransform(
                 originalJS,

@@ -20,7 +20,7 @@ import {DefaultTreeNode as Parse5Node, parse as parse5Parse, serialize as parse5
 import {Stream} from 'stream';
 
 import {removeFakeRootElements} from './support/parse5-utils';
-import {preserveOriginalWhitespaceBuffer} from './support/string-utils';
+import {preserveSurroundingWhitespace} from './support/string-utils';
 import {transformHTML} from './transform-html';
 import {transformJSModule} from './transform-js-module';
 
@@ -103,14 +103,14 @@ export const moduleSpecifierTransform =
 
         try {
           if (ctx.response.is('html')) {
-            ctx.body = preserveOriginalWhitespaceBuffer(
+            ctx.body = preserveSurroundingWhitespace(
                 body,
                 htmlSourceStrategy(
                     body,
                     (ast) => transformHTML(
                         ast, url, specifierTransform, jsSourceStrategy)));
           } else if (ctx.response.is('js')) {
-            ctx.body = preserveOriginalWhitespaceBuffer(
+            ctx.body = preserveSurroundingWhitespace(
                 body,
                 jsSourceStrategy(
                     body,

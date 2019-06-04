@@ -115,11 +115,10 @@ export const moduleSpecifierTransform =
                 logger.info(`Transformed module specifiers in "${url}"`);
           }
         } catch (error) {
-          if (logger.error) {
-            logger.error(
-                `Unable to transform module specifiers in "${url}" due to`,
-                error);
-          }
+          logger.error &&
+              logger.error(
+                  `Unable to transform module specifiers in "${url}" due to`,
+                  error);
         }
       };
     };

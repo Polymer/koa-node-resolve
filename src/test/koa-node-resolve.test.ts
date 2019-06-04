@@ -52,8 +52,8 @@ test('nodeResolve middleware transforms resolvable specifiers', async (t) => {
             `),
             'should transform specifiers in inline module script');
         t.deepEqual(logger.debugs.map((args) => args.join(' ')), [
-          '[koa-node-resolve] Resolved module specifier "x" to "./node_modules/x/main.js"',
-          '[koa-node-resolve] Resolved module specifier "x" to "./node_modules/x/main.js"',
+          '[koa-node-resolve] Resolved Node module specifier "x" to "./node_modules/x/main.js"',
+          '[koa-node-resolve] Resolved Node module specifier "x" to "./node_modules/x/main.js"',
         ]);
         t.deepEqual(logger.infos.map((args) => args.join(' ')), [
           '[koa-node-resolve] Transformed module specifiers in "/my-module.js"',
@@ -63,10 +63,11 @@ test('nodeResolve middleware transforms resolvable specifiers', async (t) => {
 });
 
 test('nodeResolve middleware ignores unresolvable specifiers', async (t) => {
-  t.plan(2);
+  t.plan(3);
+  const logger = testLogger();
   createAndServe(
       {
-        middleware: [nodeResolve({root: fixturesPath, logger: testLogger()})],
+        middleware: [nodeResolve({root: fixturesPath, logger})],
         routes: {
           '/my-module.js': `
             import * as wubbleFlurp from 'wubble-flurp';
@@ -93,5 +94,8 @@ test('nodeResolve middleware ignores unresolvable specifiers', async (t) => {
               </script>
             `),
             'should leave unresolvable specifier in inline scripts alone');
+        t.deepEqual(logger.infos.map((args) => args.join(' ')), [
+          '[koa-node-resolve] Transformed module specifiers in "/my-page.html"',
+        ]);
       });
 });

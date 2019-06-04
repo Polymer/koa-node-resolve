@@ -38,14 +38,14 @@ export const resolveNodeSpecifier =
         const resolvedURL = relativePath(modulePath, dependencyPath);
         if (resolvedURL !== specifier) {
           logger.debug &&
-              logger.debug(`Resolved module specifier "${specifier}" to "${
+              logger.debug(`Resolved Node module specifier "${specifier}" to "${
                   resolvedURL}"`);
         }
         return resolvedURL;
       } catch (error) {
         logger.warn &&
             logger.warn(
-                `Unable to resolve module specifier "${specifier}" due to`,
+                `Unable to resolve Node module specifier "${specifier}" due to`,
                 error);
         return specifier;
       }

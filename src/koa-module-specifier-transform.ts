@@ -18,7 +18,7 @@ import getStream from 'get-stream';
 import * as Koa from 'koa';
 import {DefaultTreeNode as Parse5Node, parse as parse5Parse, serialize as parse5Serialize} from 'parse5';
 import {Stream} from 'stream';
-
+import {Logger} from './support/logger';
 import {removeFakeRootElements} from './support/parse5-utils';
 import {preserveSurroundingWhitespace} from './support/string-utils';
 import {transformHTML} from './transform-html';
@@ -38,12 +38,6 @@ export type JSSerializer = (ast: BabelNode) => string;
 
 export type SpecifierTransform = (baseURL: string, specifier: string) =>
     string|undefined;
-
-export type Logger = {
-  error?: Function,
-  info?: Function,
-  debug?: Function
-};
 
 export type ModuleSpecifierTransformOptions = {
   logger?: Logger,
@@ -118,7 +112,7 @@ export const moduleSpecifierTransform =
           }
         } catch (error) {
           if (logger.error) {
-            logger.error(error);
+            logger.error(`Unable to transform "${url}" due to`, error);
           }
         }
       };

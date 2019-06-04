@@ -13,10 +13,12 @@
  */
 import nodeResolve from 'resolve';
 
+import {Logger} from './logger';
+
 import {dirname, relativePath} from './path-utils';
 
 export const resolveNodeSpecifier =
-    (modulePath: string, specifier: string): string => {
+    (modulePath: string, specifier: string, logger: Logger): string => {
       if (isURL(specifier)) {
         return specifier;
       }
@@ -33,8 +35,18 @@ export const resolveNodeSpecifier =
                 packageJson.main
           })
         });
-        return relativePath(modulePath, dependencyPath);
+        const resolvedURL = relativePath(modulePath, dependencyPath);
+        if (resolvedURL !== specifier) {
+          logger.debug &&
+              logger.debug(
+                  `Resolved module specifier "${specifier}" to ${resolvedURL}`);
+        }
+        return resolvedURL;
       } catch (error) {
+        logger.warn &&
+            logger.warn(
+                `Unable to resolve module specifier "${specifier}" due to`,
+                error);
         return specifier;
       }
     };

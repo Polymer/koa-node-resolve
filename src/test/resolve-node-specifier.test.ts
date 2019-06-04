@@ -20,7 +20,7 @@ import {resolveNodeSpecifier} from '../support/resolve-node-specifier';
 const fixturesPath =
     ensureTrailingSlash(resolvePath(__dirname, '../../test/fixtures/'));
 const resolve = (specifier: string): string =>
-    resolveNodeSpecifier(fixturesPath, specifier);
+    resolveNodeSpecifier(fixturesPath, specifier, console);
 
 test('resolveNodeSpecifier resolves package name', (t) => {
   t.plan(3);

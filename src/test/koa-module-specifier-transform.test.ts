@@ -19,12 +19,14 @@ import {moduleSpecifierTransform} from '../koa-module-specifier-transform';
 import {createAndServe, squeeze, testLogger} from './test-utils';
 
 test('moduleSpecifierTransform callback returns undefined to noop', async (t) => {
-  t.plan(2);
+  t.plan(3);
+  const logger = testLogger();
   createAndServe(
       {
         middleware: [moduleSpecifierTransform(
             (_baseURL, specifier) =>
-                specifier === 'y' ? './node_modules/y/index.js' : undefined)],
+                specifier === 'y' ? './node_modules/y/index.js' : undefined,
+            {logger})],
         routes: {
           '/my-module.js': `
             import * as x from 'x';
@@ -55,6 +57,10 @@ test('moduleSpecifierTransform callback returns undefined to noop', async (t) =>
               </script>
             `),
             'should transform only defined specifiers in inline module script');
+        t.deepEqual(logger.infos.map((args) => args.join(' ')), [
+          'Transformed module specifiers in "/my-module.js"',
+          'Transformed module specifiers in "/my-page.html"',
+        ]);
       });
 });
 
@@ -94,8 +100,8 @@ test('moduleSpecifierTransform middleware logs errors', async (t) => {
         t.deepEqual(
             logger.errors.map((args: unknown[]) => args.join(' ')),
             [
-              'Unable to transform "/my-module.js" due to SyntaxError: Unexpected token, expected ";" (2:17)',
-              'Unable to transform "/my-page.html" due to SyntaxError: Unexpected token, expected ";" (2:19)',
+              'Unable to transform module specifiers in "/my-module.js" due to SyntaxError: Unexpected token, expected ";" (2:17)',
+              'Unable to transform module specifiers in "/my-page.html" due to SyntaxError: Unexpected token, expected ";" (2:19)',
             ],
             'should log every error thrown');
       });
@@ -140,8 +146,8 @@ test('moduleSpecifierTransform middleware logs callback error', async (t) => {
         t.deepEqual(
             logger.errors.map((args) => args.join(' ')),
             [
-              'Unable to transform "/my-module.js" due to Error: whoopsie daisy',
-              'Unable to transform "/my-page.html" due to Error: whoopsie daisy',
+              'Unable to transform module specifiers in "/my-module.js" due to Error: whoopsie daisy',
+              'Unable to transform module specifiers in "/my-page.html" due to Error: whoopsie daisy',
             ],
             'should log every error thrown');
       });

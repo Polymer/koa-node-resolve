@@ -16,11 +16,13 @@ import test from 'tape';
 
 import {ensureTrailingSlash} from '../support/path-utils';
 import {resolveNodeSpecifier} from '../support/resolve-node-specifier';
+import {testLogger} from './test-utils';
 
+const logger = testLogger();
 const fixturesPath =
     ensureTrailingSlash(resolvePath(__dirname, '../../test/fixtures/'));
 const resolve = (specifier: string): string =>
-    resolveNodeSpecifier(fixturesPath, specifier, console);
+    resolveNodeSpecifier(fixturesPath, specifier, logger);
 
 test('resolveNodeSpecifier resolves package name', (t) => {
   t.plan(3);

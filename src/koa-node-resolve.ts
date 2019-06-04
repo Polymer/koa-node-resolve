@@ -32,12 +32,15 @@ export type NodeResolveOptions =
 *     the root directory configured in your downstream static file server
 *     middleware.
 */
-export const nodeResolve = (options: NodeResolveOptions = {}): Koa.Middleware =>
-    moduleSpecifierTransform(
-        (baseURL: string, specifier: string) => resolveNodeSpecifier(
-            resolvePath(
-                resolvePath(options.root || '.'),
-                noLeadingSlash(parseURL(baseURL).pathname || '/')),
-            specifier,
-            prefixLogger('[koa-node-resolve]', options.logger || console)),
-        options);
+export const nodeResolve = (options: NodeResolveOptions = {}):
+                               Koa.Middleware => {
+  const logger = prefixLogger('[koa-node-resolve]', options.logger || console);
+  return moduleSpecifierTransform(
+      (baseURL: string, specifier: string) => resolveNodeSpecifier(
+          resolvePath(
+              resolvePath(options.root || '.'),
+              noLeadingSlash(parseURL(baseURL).pathname || '/')),
+          specifier,
+          logger),
+      Object.assign({}, options, {logger}));
+};

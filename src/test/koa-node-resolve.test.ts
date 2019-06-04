@@ -56,14 +56,14 @@ test('nodeResolve middleware transforms resolvable specifiers', async (t) => {
           '[koa-node-resolve] Resolved Node module specifier "x" to "./node_modules/x/main.js"',
         ]);
         t.deepEqual(logger.infos.map((args) => args.join(' ')), [
-          '[koa-node-resolve] Transformed module specifiers in "/my-module.js"',
-          '[koa-node-resolve] Transformed module specifiers in "/my-page.html"',
+          '[koa-node-resolve] Transformed 1 module specifier(s) in "/my-module.js"',
+          '[koa-node-resolve] Transformed 1 module specifier(s) in "/my-page.html"',
         ]);
       });
 });
 
 test('nodeResolve middleware ignores unresolvable specifiers', async (t) => {
-  t.plan(3);
+  t.plan(2);
   const logger = testLogger();
   createAndServe(
       {
@@ -94,8 +94,5 @@ test('nodeResolve middleware ignores unresolvable specifiers', async (t) => {
               </script>
             `),
             'should leave unresolvable specifier in inline scripts alone');
-        t.deepEqual(logger.infos.map((args) => args.join(' ')), [
-          '[koa-node-resolve] Transformed module specifiers in "/my-page.html"',
-        ]);
       });
 });

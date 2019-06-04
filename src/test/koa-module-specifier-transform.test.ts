@@ -58,8 +58,8 @@ test('moduleSpecifierTransform callback returns undefined to noop', async (t) =>
             `),
             'should transform only defined specifiers in inline module script');
         t.deepEqual(logger.infos.map((args) => args.join(' ')), [
-          'Transformed module specifiers in "/my-module.js"',
-          'Transformed module specifiers in "/my-page.html"',
+          'Transformed 1 module specifier(s) in "/my-module.js"',
+          'Transformed 1 module specifier(s) in "/my-page.html"',
         ]);
       });
 });

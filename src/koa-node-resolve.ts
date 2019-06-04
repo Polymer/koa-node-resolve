@@ -23,7 +23,7 @@ import {resolveNodeSpecifier} from './support/resolve-node-specifier';
 export {Logger} from './support/logger';
 
 export type NodeResolveOptions =
-    ModuleSpecifierTransformOptions&{root?: string, logger?: Logger};
+    ModuleSpecifierTransformOptions&{root?: string, logger?: false | Logger};
 
 /**
 /**

@@ -52,7 +52,7 @@ Now you can serve up your web assets and Node package specifiers will be transfo
 ### Options
 
  - `root` the on-disk directory that maps to the served root URL, used to resolve module specifiers on the filesystem.  In most cases this should match the root directory configured in your downstream static file server middleware.
- - `logger` an alternative logger to use (`console` is the default).  The logger will receive `error()` to record exceptions during parsing/transforming of JavaScript modules, `warn()` when a specifier is unresolvable, `info()` to report URLs with transformed content, `debug()` to report all Node module specifier resolutions.  All log messages are prefixed with `[koa-node-resolve]`.  To disable all logging, provide an empty object `{}`.
+ - `logger` an alternative logger to use (`console` is the default).  The logger will receive `error()` to record exceptions during parsing/transforming of JavaScript modules, `warn()` when a specifier is unresolvable, `info()` to report URLs with transformed content, `debug()` to report all Node module specifier resolutions.  All log messages are prefixed with `[koa-node-resolve]`.  To disable all logging, provide `false`.
  - `htmlParser` function to convert HTML source to a `Parse5.DefaultTreeNode`.  The default implementation is equivalent to:
     ```js
     const { parse } = require('parse5');

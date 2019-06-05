@@ -52,25 +52,29 @@ Now you can serve up your web assets and Node package specifiers will be transfo
 ### Options
 
  - `root` the on-disk directory that maps to the served root URL, used to resolve module specifiers on the filesystem.  In most cases this should match the root directory configured in your downstream static file server middleware.
+
  - `logger` an alternative logger to use (`console` is the default).  The logger will receive `error()` to record exceptions during parsing/transforming of JavaScript modules, `warn()` when a specifier is unresolvable, `info()` to report URLs with transformed content, `debug()` to report all Node module specifier resolutions.  All log messages are prefixed with `[koa-node-resolve]`.  To disable all logging, provide `false`.
+
  - `htmlParser` function to convert HTML source to a `Parse5.DefaultTreeNode`.  The default implementation is equivalent to:
     ```js
     const { parse } = require('parse5');
-    import { removeFakeRootElements } = 'koa-node-resolve/lib/support/parse5-utils';
 
-    nodeResolve({ htmlParser: (source) => {
-      const ast = parse(source);
-      // Stop parse5 from creating <html>, <head> and <body> tags.
-      removeFakeRootElements(ast);
-      return ast;
-    });
+    nodeResolve({ htmlParser: parse);
     ```
+
  - `htmlSerializer` function to generate string from AST of `Parse5.DefaultTreeNode`.  The default implementation is equivalent to:
     ```js
     const { serialize } = require('parse5');
+    import { removeFakeRootElements } = 'koa-node-resolve/lib/support/parse5-utils';
 
-    nodeResolve({ htmlSerializer: serialize });
+    nodeResolve({ htmlSerializer: (ast) => {
+      // Don't emit parse5's hallucenated <html>, <head> and <body> tags.
+      removeFakeRootElements(ast);
+      return serialize(ast); 
+    });
     ```
+    Maybe you don't *want* to remove the generated `<html>`, `<head>` and `<body>` tags-- you can provide an htmlSerializer function that doesn't do that then.
+ 
  - `jsParser` function to convert JavaScript module source to a `Babel.Node`.  The default implementation is equivalent to:
     ```js
     const { parse } = require('@babel/parse');
@@ -83,11 +87,13 @@ Now you can serve up your web assets and Node package specifiers will be transfo
     ```
     The most common reason to provide your own JavaScript parser function is to enable the middleware to process content which has syntax requiring babel syntax plugins that your project is making use of, such as decorators, dynamic imports or import meta etc.
 
- - `jsSerializer` function to generate string from AST of `Babel.Node`.  The default implementation is equivalent to:
+ - `jsSerializer` function to generate output string from AST of `Babel.Node`.  The default implementation is equivalent to:
     ```js
     const serialize = require('@babel/generator');
 
     nodeResolve({ jsSerializer: (ast) => serialize(ast).code })
+    ```
+    The [@babel/generator documentation](https://babeljs.io/docs/en/babel-generator) shows many options available for tweaking output.  Maybe you want to generate source maps and embed them in the response; you could do that here.
 
 ## Karma Testing Setup
 

@@ -47,13 +47,13 @@ export type ModuleSpecifierTransformOptions = {
   jsSerializer?: JSSerializer,
 };
 
-const defaultHTMLParser = (html: string): Parse5Node => {
-  const ast = parse5Parse(html) as Parse5Node;
-  removeFakeRootElements(ast);
-  return ast;
-};
+const defaultHTMLParser = (html: string): Parse5Node =>
+    parse5Parse(html) as Parse5Node;
 
-const defaultHTMLSerializer = (ast: Parse5Node): string => parse5Serialize(ast);
+const defaultHTMLSerializer = (ast: Parse5Node): string => {
+  removeFakeRootElements(ast);
+  return parse5Serialize(ast);
+};
 
 const defaultJSParser = (js: string): BabelNode =>
     babelParse(js, {sourceType: 'unambiguous'}) as BabelNode;

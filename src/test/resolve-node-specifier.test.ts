@@ -16,13 +16,15 @@ import test from 'tape';
 
 import {ensureTrailingSlash} from '../support/path-utils';
 import {resolveNodeSpecifier} from '../support/resolve-node-specifier';
+import {testLogger} from './test-utils';
 
+const logger = testLogger();
 const fixturesPath =
     ensureTrailingSlash(resolvePath(__dirname, '../../test/fixtures/'));
 const resolve = (specifier: string): string =>
-    resolveNodeSpecifier(fixturesPath, specifier);
+    resolveNodeSpecifier(fixturesPath, specifier, logger);
 
-test('resolve package name', (t) => {
+test('resolveNodeSpecifier resolves package name', (t) => {
   t.plan(3);
   t.equal(
       resolve('x'),
@@ -38,7 +40,7 @@ test('resolve package name', (t) => {
       'should resolve to `package.json` "module"');
 });
 
-test('resolve extension-less module subpath', (t) => {
+test('resolveNodeSpecifier resolves extension-less module subpath', (t) => {
   t.plan(3);
   t.equal(
       resolve('z/jsnext'),
@@ -54,7 +56,7 @@ test('resolve extension-less module subpath', (t) => {
       'should resolve to `.node` extension');
 });
 
-test('resolve extension-less relative path', (t) => {
+test('resolveNodeSpecifier resolves extension-less relative path', (t) => {
   t.plan(3);
   t.equal(
       resolve('./node_modules/z/jsnext'),

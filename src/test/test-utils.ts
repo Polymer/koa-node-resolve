@@ -14,6 +14,7 @@
 import {Server} from 'http';
 import Koa from 'koa';
 import route from 'koa-route';
+import {Logger} from '../support/logger';
 
 export type AppOptions = {
   middleware?: Koa.Middleware[],
@@ -56,6 +57,27 @@ export const serveApp =
       app.listen(port).on('error', (e) => `ERROR: ${console.log(e)}`);
   await callback(server);
   await server.close();
+};
+
+export type TestLogger = Logger&{
+  debugs: unknown[][],
+  infos: unknown[][],
+  errors: unknown[][],
+  warns: unknown[][]
+};
+
+export const testLogger = (): TestLogger => {
+  const logger: TestLogger = {
+    debugs: [],
+    debug: (...args: unknown[]) => logger.debugs.push(args),
+    infos: [],
+    info: (...args: unknown[]) => logger.infos.push(args),
+    errors: [],
+    error: (...args: unknown[]) => logger.errors.push(args),
+    warns: [],
+    warn: (...args: unknown[]) => logger.warns.push(args)
+  };
+  return logger;
 };
 
 export const squeeze = (html: string): string => html.replace(/\s+/mg, ' ')

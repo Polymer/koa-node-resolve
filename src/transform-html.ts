@@ -11,35 +11,30 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import {DefaultTreeNode, parse, serialize} from 'parse5';
+import {DefaultTreeNode} from 'parse5';
 import {resolve as resolveURL} from 'url';
 
-import {TransformSpecifierFunction} from './koa-module-specifier-transform';
-import {getAttr, getTextContent, nodeWalkAll, removeFakeRootElements, setTextContent} from './support/parse5-utils';
-import {transformJavaScriptModuleString} from './transform-javascript-module';
+import {JSModuleSourceStrategy, SpecifierTransform} from './koa-module-specifier-transform';
+import {getAttr, getTextContent, nodeWalkAll, setTextContent} from './support/parse5-utils';
+import {preserveSurroundingWhitespace} from './support/string-utils';
+import {transformJSModule} from './transform-js-module';
 
-export const transformHTMLAST =
+export const transformHTML =
     (ast: DefaultTreeNode,
      url: string,
-     transformSpecifier: TransformSpecifierFunction) => {
+     specifierTransform: SpecifierTransform,
+     jsModuleTransform: JSModuleSourceStrategy): DefaultTreeNode => {
       const baseURL = getBaseURL(ast, url);
       getInlineModuleScripts(ast).forEach((scriptTag) => {
-        const js = getTextContent(scriptTag);
-        const transformedJs =
-            transformJavaScriptModuleString(js, baseURL, transformSpecifier);
-        setTextContent(scriptTag, transformedJs);
+        const originalJS = getTextContent(scriptTag);
+        const transformedJS = preserveSurroundingWhitespace(
+            originalJS,
+            jsModuleTransform(
+                originalJS,
+                (ast) => transformJSModule(ast, baseURL, specifierTransform)));
+        setTextContent(scriptTag, transformedJS);
       });
-      return;
-    };
-
-export const transformHTMLString =
-    (html: string,
-     url: string,
-     transformSpecifier: TransformSpecifierFunction) => {
-      const ast = parse(html) as DefaultTreeNode;
-      removeFakeRootElements(ast);
-      transformHTMLAST(ast, url, transformSpecifier);
-      return serialize(ast);
+      return ast;
     };
 
 const getBaseURL = (ast: DefaultTreeNode, location: string): string => {

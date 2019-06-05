@@ -15,15 +15,18 @@ import request from 'supertest';
 import test from 'tape';
 
 import {moduleSpecifierTransform} from '../koa-module-specifier-transform';
-import {createAndServe, squeeze} from './test-utils';
 
-test('specifier transform returning `undefined` is a noop', async (t) => {
-  t.plan(2);
+import {createAndServe, squeeze, testLogger} from './test-utils';
+
+test('moduleSpecifierTransform callback returns undefined to noop', async (t) => {
+  t.plan(3);
+  const logger = testLogger();
   createAndServe(
       {
         middleware: [moduleSpecifierTransform(
             (_baseURL, specifier) =>
-                specifier === 'y' ? './node_modules/y/index.js' : undefined)],
+                specifier === 'y' ? './node_modules/y/index.js' : undefined,
+            {logger})],
         routes: {
           '/my-module.js': `
             import * as x from 'x';
@@ -44,7 +47,7 @@ test('specifier transform returning `undefined` is a noop', async (t) => {
               import * as x from 'x';
               import * as y from "./node_modules/y/index.js";
             `),
-            'should transform defined specifiers and leave others alone');
+            'should transform only defined specifiers in external module');
         t.equal(
             squeeze((await request(server).get('/my-page.html')).text),
             squeeze(`
@@ -54,13 +57,16 @@ test('specifier transform returning `undefined` is a noop', async (t) => {
               </script>
             `),
             'should transform only defined specifiers in inline module script');
+        t.deepEqual(logger.infos.map((args) => args.join(' ')), [
+          'Transformed 1 module specifier(s) in "/my-module.js"',
+          'Transformed 1 module specifier(s) in "/my-page.html"',
+        ]);
       });
 });
 
-test('logs errors when parsing', async (t) => {
+test('moduleSpecifierTransform middleware logs errors', async (t) => {
   t.plan(3);
-  const errors: string[] = [];
-  const logger = {error: (...args: string[]) => errors.push(args.join(' '))};
+  const logger = testLogger();
   createAndServe(
       {
         middleware: [moduleSpecifierTransform(
@@ -91,17 +97,19 @@ test('logs errors when parsing', async (t) => {
               </script>
             `),
             'should leave a file with unparseable inline module script alone');
-        t.deepEqual(errors, [
-          'SyntaxError: Unexpected token, expected ";" (2:17)',
-          'SyntaxError: Unexpected token, expected ";" (2:19)',
-        ]);
+        t.deepEqual(
+            logger.errors.map((args: unknown[]) => args.join(' ')),
+            [
+              'Unable to transform module specifiers in "/my-module.js" due to SyntaxError: Unexpected token, expected ";" (2:17)',
+              'Unable to transform module specifiers in "/my-page.html" due to SyntaxError: Unexpected token, expected ";" (2:19)',
+            ],
+            'should log every error thrown');
       });
 });
 
-test('logs specifier transform error when transforming', async (t) => {
+test('moduleSpecifierTransform middleware logs callback error', async (t) => {
   t.plan(3);
-  const errors: string[] = [];
-  const logger = {error: (...args: string[]) => errors.push(args.join(' '))};
+  const logger = testLogger();
   createAndServe(
       {
         middleware: [moduleSpecifierTransform(
@@ -125,17 +133,22 @@ test('logs specifier transform error when transforming', async (t) => {
             squeeze((await request(server).get('/my-module.js')).text),
             squeeze(`
               import * as wubbleFlurp from 'wubble-flurp';
-          `));
+            `),
+            'should not transform the external script when error occurs');
         t.equal(
             squeeze((await request(server).get('/my-page.html')).text),
             squeeze(`
               <script type="module">
               import * as wubbleFlurp from 'wubble-flurp';
               </script>
-          `));
-        t.deepEqual(errors, [
-          'Error: whoopsie daisy',
-          'Error: whoopsie daisy',
-        ]);
+            `),
+            'should not transform inline script when error occurs');
+        t.deepEqual(
+            logger.errors.map((args) => args.join(' ')),
+            [
+              'Unable to transform module specifiers in "/my-module.js" due to Error: whoopsie daisy',
+              'Unable to transform module specifiers in "/my-page.html" due to Error: whoopsie daisy',
+            ],
+            'should log every error thrown');
       });
 });

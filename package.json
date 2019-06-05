@@ -26,8 +26,8 @@
   },
   "homepage": "https://github.com/PolymerLabs/koa-node-resolve",
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "license": "BSD-3-Clause",
+  "author": "The Polymer Project Authors",
   "devDependencies": {
     "@babel/types": "^7.4.4",
     "@types/babel__generator": "^7.0.2",

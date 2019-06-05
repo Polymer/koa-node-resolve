@@ -10,7 +10,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-## Unreleased
+<!-- ## Unreleased -->
+<!-- Add new unreleased items here -->
 
+## [1.0.0-pre.1] - 2019-06-05
 - Rewrites resolvable Node package specifiers in JavaScript module files.
 - Rewrites resolvable Node package specifiers in HTML files in `<script type="module">` elements, honoring `<base href>` where present.

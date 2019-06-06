@@ -22,8 +22,10 @@ import {resolveNodeSpecifier} from './support/resolve-node-specifier';
 
 export {Logger} from './support/logger';
 
-export type NodeResolveOptions =
-    ModuleSpecifierTransformOptions&{root?: string, logger?: false | Logger};
+export type NodeResolveOptions = Pick<
+    ModuleSpecifierTransformOptions,
+    Exclude<keyof ModuleSpecifierTransformOptions, 'logger'>>&
+    {root?: string, logger?: false | Logger};
 
 /**
 /**

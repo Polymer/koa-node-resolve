@@ -45,7 +45,7 @@ test('moduleSpecifierTransform callback returns undefined to noop', async (t) =>
             squeeze((await request(server).get('/my-module.js')).text),
             squeeze(`
               import * as x from 'x';
-              import * as y from "./node_modules/y/index.js";
+              import * as y from './node_modules/y/index.js';
             `),
             'should transform only defined specifiers in external module');
         t.equal(
@@ -53,7 +53,7 @@ test('moduleSpecifierTransform callback returns undefined to noop', async (t) =>
             squeeze(`
               <script type="module">
               import * as x from 'x';
-              import * as y from "./node_modules/y/index.js";
+              import * as y from './node_modules/y/index.js';
               </script>
             `),
             'should transform only defined specifiers in inline module script');
@@ -61,6 +61,86 @@ test('moduleSpecifierTransform callback returns undefined to noop', async (t) =>
           'Transformed 1 module specifier(s) in "/my-module.js"',
           'Transformed 1 module specifier(s) in "/my-page.html"',
         ]);
+      });
+});
+
+test('moduleSpecifierTransform will convert dynamic imports', async (t) => {
+  t.plan(3);
+  const logger = testLogger();
+  createAndServe(
+      {
+        middleware: [moduleSpecifierTransform(
+            (_baseURL, specifier) => `./node_modules/${specifier}/index.js`,
+            {logger})],
+        routes: {
+          '/my-module.js': `
+            import('x').then((x) => x.doStuff());
+          `,
+          '/my-page.html': `
+            <script type="module">
+            import('x').then((x) => x.doStuff());
+            </script>
+          `,
+        }
+      },
+      async (server) => {
+        t.equal(
+            squeeze((await request(server).get('/my-module.js')).text),
+            // NOTE(usergenic): @babel/generator doesn't have an option to
+            // retain parenthesis around single parameter anonymous functions,
+            // so `(x) => ...` is unavoidably transformed to `x => ...`
+            squeeze(`
+              import('./node_modules/x/index.js').then(x => x.doStuff());
+            `),
+            'should transform dynamic import in external module');
+        t.equal(
+            squeeze((await request(server).get('/my-page.html')).text),
+            squeeze(`
+              <script type="module">
+              import('./node_modules/x/index.js').then(x => x.doStuff());
+              </script>
+            `),
+            'should transform dynamic import in inline module script');
+        t.deepEqual(logger.infos.map((args) => args.join(' ')), [
+          'Transformed 1 module specifier(s) in "/my-module.js"',
+          'Transformed 1 module specifier(s) in "/my-page.html"',
+        ]);
+      });
+});
+
+test('moduleSpecifierTransform default parser configuration', async (t) => {
+  t.plan(1);
+  const logger = testLogger();
+  createAndServe(
+      {
+        middleware: [moduleSpecifierTransform(
+            (_baseURL, specifier) => `./node_modules/${specifier}/index.js`,
+            {logger})],
+        routes: {
+          '/my-module.js': `
+            export default from 'x';
+            export * as y from 'y';
+            async function* infiniteMeta() {
+              while (true) {
+                yield { ...import.meta };
+              }
+            }
+          `
+        }
+      },
+      async (server) => {
+        t.equal(
+            squeeze((await request(server).get('/my-module.js')).text),
+            squeeze(`
+              export default from './node_modules/x/index.js';
+              export * as y from './node_modules/y/index.js';
+              async function* infiniteMeta() {
+                while (true) {
+                  yield { ...import.meta };
+                }
+              }
+            `),
+            'should tolerate modern JavaScript syntax features');
       });
 });
 

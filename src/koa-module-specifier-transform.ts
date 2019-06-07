@@ -58,10 +58,36 @@ const defaultHTMLSerializer = (ast: Parse5Node): string => {
 };
 
 const defaultJSParser = (js: string): BabelNode =>
-    babelParse(js, {sourceType: 'unambiguous'}) as BabelNode;
+    babelParse(js, {
+      sourceType: 'unambiguous',
+      allowAwaitOutsideFunction: true,
+      plugins: [
+        'dynamicImport',
+        'exportDefaultFrom',
+        'exportNamespaceFrom',
+        'importMeta',
+      ],
+    }) as BabelNode;
+
+// TODO(usergenic): Send PR to update `@types/babel__generator`
+declare module '@babel/generator' {
+  interface GeneratorOptions {
+    jsescOption: {
+      quotes: 'single'|'double',
+    };
+    retainFunctionParens: Boolean;
+  }
+}
 
 const defaultJSSerializer = (ast: BabelNode): string =>
-    babelSerialize(ast).code;
+    babelSerialize(ast, {
+      concise: false,
+      jsescOption: {
+        quotes: 'single',
+      },
+      retainFunctionParens: true,
+      retainLines: true,
+    }).code;
 
 export const moduleSpecifierTransform = (specifierTransform: SpecifierTransform,
                                          options:

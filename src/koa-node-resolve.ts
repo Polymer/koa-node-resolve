@@ -16,7 +16,7 @@ import {resolve as resolvePath} from 'path';
 import {parse as parseURL} from 'url';
 
 import {moduleSpecifierTransform, ModuleSpecifierTransformOptions} from './koa-module-specifier-transform';
-import {prefixLogger} from './support/logger';
+import {prefixedLogger} from './support/logger';
 import {noLeadingSlash} from './support/path-utils';
 import {resolveNodeSpecifier} from './support/resolve-node-specifier';
 
@@ -36,7 +36,7 @@ export const nodeResolve =
     (options: NodeResolveOptions = {}): Koa.Middleware => {
       const logger = options.logger === false ?
           {} :
-          prefixLogger('[koa-node-resolve]', options.logger || console);
+          prefixedLogger('[koa-node-resolve]', options.logger || console);
       return moduleSpecifierTransform(
           (baseURL: string, specifier: string) => resolveNodeSpecifier(
               resolvePath(

@@ -26,7 +26,7 @@ test('moduleSpecifierTransform callback returns undefined to noop', async (t) =>
         middleware: [moduleSpecifierTransform(
             (_baseURL, specifier) =>
                 specifier === 'y' ? './node_modules/y/index.js' : undefined,
-            {logger})],
+            {logger, logLevel: 'info'})],
         routes: {
           '/my-module.js': `
             import * as x from 'x';

@@ -10,7 +10,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-<!-- ## Unreleased -->
+## Unreleased
+- Added `logLevel` option which defaults to `warn` so info/debug transformations are supressed by default.
 <!-- Add new unreleased items here -->
 
 ## [1.0.0-pre.3] - 2019-06-06

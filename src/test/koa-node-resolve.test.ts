@@ -40,14 +40,14 @@ test('nodeResolve middleware transforms resolvable specifiers', async (t) => {
         t.equal(
             squeeze((await request(server).get('/my-module.js')).text),
             squeeze(`
-              import * as x from "./node_modules/x/main.js";
+              import * as x from './node_modules/x/main.js';
             `),
             'should transform specifiers in JavaScript module');
         t.equal(
             squeeze((await request(server).get('/my-page.html')).text),
             squeeze(`
               <script type="module">
-              import * as x from "./node_modules/x/main.js";
+              import * as x from './node_modules/x/main.js';
               </script>
             `),
             'should transform specifiers in inline module script');

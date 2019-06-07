@@ -10,11 +10,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-## Unreleased
-- Fix missing `@types/parse5` dependency for TypeScript users.
+<!-- ## Unreleased -->
 <!-- Add new unreleased items here -->
 
 ## [1.0.0-pre.3] - 2019-06-06
+- Fix missing `@types/parse5` dependency for TypeScript users.
 - Fix invalid TypeScript typings related to the logger option.
 
 ## [1.0.0-pre.2] - 2019-06-05

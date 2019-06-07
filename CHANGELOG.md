@@ -10,11 +10,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-## Unreleased
+<!-- ## Unreleased -->
+<!-- Add new unreleased items here -->
+
+## [1.0.0-pre.4] - 2019-06-07
 - Added `logLevel` option which defaults to `warn` so info/debug transformations are supressed by default.
 - Added `dynamicImport`, `importMeta`, `exportDefaultFrom` and `exportNamespaceFrom` to default Babel parser configuration.
 - Added single-quoted strings, `retainFunctionParens` and `retainLines` to default Babel generator configuration.
-<!-- Add new unreleased items here -->
 
 ## [1.0.0-pre.3] - 2019-06-06
 - Fix missing `@types/parse5` dependency for TypeScript users.

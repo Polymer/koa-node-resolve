@@ -18,7 +18,8 @@ import getStream from 'get-stream';
 import * as Koa from 'koa';
 import {DefaultTreeNode as Parse5Node, parse as parse5Parse, serialize as parse5Serialize} from 'parse5';
 import {Stream} from 'stream';
-import {Logger} from './support/logger';
+
+import {leveledLogger, Logger, LogLevel} from './support/logger';
 import {removeFakeRootElements} from './support/parse5-utils';
 import {preserveSurroundingWhitespace} from './support/string-utils';
 import {transformHTML} from './transform-html';
@@ -41,6 +42,7 @@ export type SpecifierTransform = (baseURL: string, specifier: string) =>
 
 export type ModuleSpecifierTransformOptions = {
   logger?: Logger|false,
+  logLevel?: LogLevel,
   htmlParser?: HTMLParser,
   htmlSerializer?: HTMLSerializer,
   jsParser?: JSParser,
@@ -91,7 +93,10 @@ export const moduleSpecifierTransform = (specifierTransform: SpecifierTransform,
                                          options:
                                              ModuleSpecifierTransformOptions =
                                                  {}): Koa.Middleware => {
-  const logger = options.logger === false ? {} : (options.logger || console);
+  const logLevel = options.logLevel || 'warn';
+  const logger = options.logger === false ?
+      {} :
+      leveledLogger(options.logger || console, logLevel);
   const htmlParser = options.htmlParser || defaultHTMLParser;
   const htmlSerializer = options.htmlSerializer || defaultHTMLSerializer;
   const jsParser = options.jsParser || defaultJSParser;

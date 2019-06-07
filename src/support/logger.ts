@@ -17,22 +17,47 @@ export type Logger = {
   [key in LogLevel]?: LogFunction;
 };
 
-export const prefixLogger = (prefix: string, logger: Logger): Logger => {
+type LogMethod = (arg?: unknown, ...args: unknown[]) => void;
+
+const LogLevels = ['debug', 'info', 'warn', 'error'] as LogLevel[];
+
+export const prefixedLogger = (prefix: string, logger: Logger): Logger => {
   const newLogger: Logger = {};
-  for (const method of ['debug', 'info', 'wrap', 'error'] as LogLevel[]) {
-    newLogger[method] = wrapLoggerMethod(prefix, logger, method);
+  for (const logLevel of LogLevels) {
+    newLogger[logLevel] = wrapLogMethod(
+        logger,
+        logLevel,
+        (log: LogMethod, args: unknown[]) => log(prefix, ...args));
   }
   return newLogger;
 };
 
-const wrapLoggerMethod = (prefix: string, logger: Logger, method: LogLevel) =>
-    (...args: unknown[]): void => {
-      if (!logger) {
-        return;
+export const leveledLogger =
+    (logger: Logger, minimumLogLevel: LogLevel): Logger => {
+      const newLogger: Logger = {};
+      for (const logLevel of LogLevels) {
+        if (LogLevels.indexOf(minimumLogLevel) > LogLevels.indexOf(logLevel)) {
+          continue;
+        }
+        newLogger[logLevel] = wrapLogMethod(
+            logger,
+            logLevel,
+            (log: LogMethod, args: unknown[]) => log(args.shift(), ...args));
       }
+      return newLogger;
+    };
+
+const wrapLogMethod =
+    (logger: Logger,
+     method: LogLevel,
+     callback: (log: LogMethod, args: unknown[]) => void): LogMethod|
+    undefined => {
       const logFunction = logger[method];
       if (!logFunction) {
         return;
       }
-      logFunction.apply(logger, [prefix, ...args]);
+      return (arg?: unknown, ...args: unknown[]) => callback(
+                 (arg?: unknown, ...args: unknown[]) =>
+                     logFunction.apply(logger, [arg, ...args]),
+                 [arg, ...args]);
     };

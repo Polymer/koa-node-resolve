@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -->
 
 ## Unreleased
+- Added `logLevel` option which defaults to `warn` so info/debug transformations are supressed by default.
 - Added `dynamicImport`, `importMeta`, `exportDefaultFrom` and `exportNamespaceFrom` to default Babel parser configuration.
 - Added single-quoted strings, `retainFunctionParens` and `retainLines` to default Babel generator configuration.
 <!-- Add new unreleased items here -->

@@ -55,6 +55,8 @@ Now you can serve up your web assets and Node package specifiers will be transfo
 
  - `logger` an alternative logger to use (`console` is the default).  The logger will receive `error()` to record exceptions during parsing/transforming of JavaScript modules, `warn()` when a specifier is unresolvable, `info()` to report URLs with transformed content, `debug()` to report all Node module specifier resolutions.  All log messages are prefixed with `[koa-node-resolve]`.  To disable all logging, provide `false`.
 
+ - `logLevel` (defaults to `warn`) sets the minimum level of severity for an event to be logged.  Options in order of severity: `debug`, `info`, `warn`, `error`.
+
  - `htmlParser` function to convert HTML source to a `Parse5.DefaultTreeNode`.  The default implementation is equivalent to:
     ```js
     const { parse } = require('parse5');

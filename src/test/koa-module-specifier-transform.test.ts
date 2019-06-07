@@ -26,7 +26,7 @@ test('moduleSpecifierTransform callback returns undefined to noop', async (t) =>
         middleware: [moduleSpecifierTransform(
             (_baseURL, specifier) =>
                 specifier === 'y' ? './node_modules/y/index.js' : undefined,
-            {logger})],
+            {logger, logLevel: 'info'})],
         routes: {
           '/my-module.js': `
             import * as x from 'x';
@@ -71,7 +71,7 @@ test('moduleSpecifierTransform will convert dynamic imports', async (t) => {
       {
         middleware: [moduleSpecifierTransform(
             (_baseURL, specifier) => `./node_modules/${specifier}/index.js`,
-            {logger})],
+            {logger, logLevel: 'info'})],
         routes: {
           '/my-module.js': `
             import('x').then((x) => x.doStuff());

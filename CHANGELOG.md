@@ -10,7 +10,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-<!-- ## Unreleased -->
+## Unreleased
+- Added `dynamicImport`, `importMeta`, `exportDefaultFrom` and `exportNamespaceFrom` to default Babel parser configuration.
+- Added single-quoted strings, `retainFunctionParens` and `retainLines` to default Babel generator configuration.
 <!-- Add new unreleased items here -->
 
 ## [1.0.0-pre.3] - 2019-06-06

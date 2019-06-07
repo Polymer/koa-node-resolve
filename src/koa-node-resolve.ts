@@ -16,14 +16,14 @@ import {resolve as resolvePath} from 'path';
 import {parse as parseURL} from 'url';
 
 import {moduleSpecifierTransform, ModuleSpecifierTransformOptions} from './koa-module-specifier-transform';
-import {Logger, prefixLogger} from './support/logger';
+import {prefixLogger} from './support/logger';
 import {noLeadingSlash} from './support/path-utils';
 import {resolveNodeSpecifier} from './support/resolve-node-specifier';
 
 export {Logger} from './support/logger';
 
 export type NodeResolveOptions =
-    ModuleSpecifierTransformOptions&{root?: string, logger?: false | Logger};
+    ModuleSpecifierTransformOptions&{root?: string};
 
 /**
 /**

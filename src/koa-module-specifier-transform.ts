@@ -40,7 +40,7 @@ export type SpecifierTransform = (baseURL: string, specifier: string) =>
     string|undefined;
 
 export type ModuleSpecifierTransformOptions = {
-  logger?: Logger,
+  logger?: Logger|false,
   htmlParser?: HTMLParser,
   htmlSerializer?: HTMLSerializer,
   jsParser?: JSParser,
@@ -65,7 +65,7 @@ export const moduleSpecifierTransform = (specifierTransform: SpecifierTransform,
                                          options:
                                              ModuleSpecifierTransformOptions =
                                                  {}): Koa.Middleware => {
-  const logger = options.logger || console;
+  const logger = options.logger === false ? {} : (options.logger || console);
   const htmlParser = options.htmlParser || defaultHTMLParser;
   const htmlSerializer = options.htmlSerializer || defaultHTMLSerializer;
   const jsParser = options.jsParser || defaultJSParser;

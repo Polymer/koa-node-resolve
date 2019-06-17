@@ -10,7 +10,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-<!-- ## Unreleased -->
+## Unreleased
+
+- Fix `Module '@babel/generator' resolves to an untyped module` error for TypeScript users.
 <!-- Add new unreleased items here -->
 
 ## [1.0.0-pre.4] - 2019-06-07

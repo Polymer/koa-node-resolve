@@ -27,7 +27,7 @@ test('nodeResolve middleware transforms resolvable specifiers', async (t) => {
   createAndServe(
       {
         middleware:
-            [nodeResolve({root: fixturesPath, logger, logLevel: 'info'})],
+            [nodeResolve({root: fixturesPath, logger, logLevel: 'debug'})],
         routes: {
           '/my-module.js': `import * as x from 'x';`,
           '/my-page.html': `

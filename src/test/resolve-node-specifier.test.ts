@@ -71,3 +71,35 @@ test('resolveNodeSpecifier resolves extension-less relative path', (t) => {
       './node_modules/z/binary-file.node',
       'should resolve to `.node` extension');
 });
+
+test('resolveNodeSpecifier resolves relative paths', (t) => {
+  t.plan(5);
+  t.equal(
+      resolve('./some-file.js'),
+      './some-file.js',
+      'should resolve relative path to non-package file');
+  t.equal(
+      resolve('./non-existing-file.js'),
+      './non-existing-file.js',
+      'should resolve a relative path specifier when the file does not exist');
+  t.equal(
+      resolve('./node_modules/x/main.js'),
+      './node_modules/x/main.js',
+      'should resolve relative path to existing main file');
+  t.equal(
+      resolve('./node_modules/y/main.js'),
+      './node_modules/y/main.js',
+      'should resolve relative path to existing jsnext:main file');
+  t.equal(
+      resolve('./node_modules/z/main.js'),
+      './node_modules/z/main.js',
+      'should resolve relative path to existing module file');
+});
+
+test('resolveNodeSpecifier resolves modules without import/export', (t) => {
+  t.plan(1);
+  t.equal(
+      resolve('no-imports-or-exports'),
+      './node_modules/no-imports-or-exports/main.js',
+      'should resolve package which contains non-module main.js');
+});

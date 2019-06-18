@@ -37,8 +37,8 @@ export type JSModuleSourceStrategy =
 export type JSParser = (js: string) => BabelNode;
 export type JSSerializer = (ast: BabelNode) => string;
 
-export type SpecifierTransform = (baseURL: string, specifier: string) =>
-    string|undefined;
+export type SpecifierTransform =
+    (baseURL: string, specifier: string, logger: Logger) => string|undefined;
 
 export type ModuleSpecifierTransformOptions = {
   logger?: Logger|false,
@@ -89,83 +89,87 @@ const defaultJSSerializer = (ast: BabelNode): string =>
       retainLines: true,
     }).code;
 
-export const moduleSpecifierTransform = (specifierTransform: SpecifierTransform,
-                                         options:
-                                             ModuleSpecifierTransformOptions =
-                                                 {}): Koa.Middleware => {
-  const logLevel = options.logLevel || 'warn';
-  const logger = options.logger === false ?
-      {} :
-      leveledLogger(options.logger || console, logLevel);
-  const htmlParser = options.htmlParser || defaultHTMLParser;
-  const htmlSerializer = options.htmlSerializer || defaultHTMLSerializer;
-  const jsParser = options.jsParser || defaultJSParser;
-  const jsSerializer = options.jsSerializer || defaultJSSerializer;
+export const moduleSpecifierTransform =
+    (specifierTransform: SpecifierTransform,
+     options: ModuleSpecifierTransformOptions = {}): Koa.Middleware => {
+      const logLevel = options.logLevel || 'warn';
+      const logger = options.logger === false ?
+          {} :
+          leveledLogger(options.logger || console, logLevel);
+      const htmlParser = options.htmlParser || defaultHTMLParser;
+      const htmlSerializer = options.htmlSerializer || defaultHTMLSerializer;
+      const jsParser = options.jsParser || defaultJSParser;
+      const jsSerializer = options.jsSerializer || defaultJSSerializer;
 
-  return async (ctx: Koa.Context, next: Function) => {
-    await next();
+      return async (ctx: Koa.Context, next: Function) => {
+        await next();
 
-    // When the response is not HTML or JavaScript, we have nothing to
-    // transform.
-    if (!(ctx.response.is('html') || ctx.response.is('js'))) {
-      return;
-    }
+        // When the response is not HTML or JavaScript, we have nothing to
+        // transform.
+        if (!(ctx.response.is('html') || ctx.response.is('js'))) {
+          return;
+        }
 
-    const body = await getBodyAsString(ctx.body);
-    // When there's no body to return, there's nothing to transform.
-    if (!body) {
-      return;
-    }
+        const body = await getBodyAsString(ctx.body);
+        // When there's no body to return, there's nothing to transform.
+        if (!body) {
+          return;
+        }
 
-    const url = ctx.request.url;
+        const url = ctx.request.url;
 
-    const htmlSourceStrategy =
-        (html: string, transform: HTMLASTTransform): string =>
-            htmlSerializer(transform(htmlParser(html)));
+        const htmlSourceStrategy =
+            (html: string, transform: HTMLASTTransform): string =>
+                htmlSerializer(transform(htmlParser(html)));
 
-    const jsSourceStrategy =
-        (js: string, transform: JSModuleASTTransform): string =>
-            jsSerializer(transform(jsParser(js)));
+        const jsSourceStrategy =
+            (js: string, transform: JSModuleASTTransform): string =>
+                jsSerializer(transform(jsParser(js)));
 
-    let specifierTransformCount = 0;
-    const countedSpecifierTransform =
-        (baseURL: string, specifier: string): undefined|string => {
-          const result = specifierTransform(baseURL, specifier);
-          if (result && result !== specifier) {
-            ++specifierTransformCount;
+        let specifierTransformCount = 0;
+        const countedSpecifierTransform =
+            (baseURL: string, specifier: string, logger: Logger): undefined|
+            string => {
+              const result = specifierTransform(baseURL, specifier, logger);
+              if (result && result !== specifier) {
+                ++specifierTransformCount;
+              }
+              return result;
+            };
+
+        try {
+          if (ctx.response.is('html')) {
+            ctx.body = preserveSurroundingWhitespace(
+                body,
+                htmlSourceStrategy(
+                    body,
+                    (ast) => transformHTML(
+                        ast,
+                        url,
+                        countedSpecifierTransform,
+                        jsSourceStrategy,
+                        logger)));
+          } else if (ctx.response.is('js')) {
+            ctx.body = preserveSurroundingWhitespace(
+                body,
+                jsSourceStrategy(
+                    body,
+                    (ast) => transformJSModule(
+                        ast, url, countedSpecifierTransform, logger)));
           }
-          return result;
-        };
-
-    try {
-      if (ctx.response.is('html')) {
-        ctx.body = preserveSurroundingWhitespace(
-            body,
-            htmlSourceStrategy(
-                body,
-                (ast) => transformHTML(
-                    ast, url, countedSpecifierTransform, jsSourceStrategy)));
-      } else if (ctx.response.is('js')) {
-        ctx.body = preserveSurroundingWhitespace(
-            body,
-            jsSourceStrategy(
-                body,
-                (ast) =>
-                    transformJSModule(ast, url, countedSpecifierTransform)));
-      }
-      if (specifierTransformCount > 0) {
-        logger.info &&
-            logger.info(`Transformed ${
-                specifierTransformCount} module specifier(s) in "${url}"`);
-      }
-    } catch (error) {
-      logger.error &&
-          logger.error(
-              `Unable to transform module specifiers in "${url}" due to`,
-              error);
-    }
-  };
-};
+          if (specifierTransformCount > 0) {
+            logger.info &&
+                logger.info(`Transformed ${
+                    specifierTransformCount} module specifier(s) in "${url}"`);
+          }
+        } catch (error) {
+          logger.error &&
+              logger.error(
+                  `Unable to transform module specifiers in "${url}" due to`,
+                  error);
+        }
+      };
+    };
 
 // TODO(usergenic): This should probably be published as a separate npm package.
 const getBodyAsString = async(body: Buffer|Stream|string): Promise<string> => {

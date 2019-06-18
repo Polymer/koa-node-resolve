@@ -24,7 +24,7 @@ test('moduleSpecifierTransform callback returns undefined to noop', async (t) =>
   createAndServe(
       {
         middleware: [moduleSpecifierTransform(
-            (_baseURL, specifier) =>
+            (_baseURL, specifier, _logger) =>
                 specifier === 'y' ? './node_modules/y/index.js' : undefined,
             {logger, logLevel: 'info'})],
         routes: {
@@ -70,7 +70,8 @@ test('moduleSpecifierTransform will convert dynamic imports', async (t) => {
   createAndServe(
       {
         middleware: [moduleSpecifierTransform(
-            (_baseURL, specifier) => `./node_modules/${specifier}/index.js`,
+            (_baseURL, specifier, _logger) =>
+                `./node_modules/${specifier}/index.js`,
             {logger, logLevel: 'info'})],
         routes: {
           '/my-module.js': `
@@ -114,7 +115,8 @@ test('moduleSpecifierTransform default parser configuration', async (t) => {
   createAndServe(
       {
         middleware: [moduleSpecifierTransform(
-            (_baseURL, specifier) => `./node_modules/${specifier}/index.js`,
+            (_baseURL, specifier, _logger) =>
+                `./node_modules/${specifier}/index.js`,
             {logger})],
         routes: {
           '/my-module.js': `
@@ -150,7 +152,7 @@ test('moduleSpecifierTransform middleware logs errors', async (t) => {
   createAndServe(
       {
         middleware: [moduleSpecifierTransform(
-            (_baseURL, _specifier) => undefined, {logger})],
+            (_baseURL, _specifier, _logger) => undefined, {logger})],
         routes: {
           '/my-module.js': `
             this is a syntax error;
@@ -193,7 +195,7 @@ test('moduleSpecifierTransform middleware logs callback error', async (t) => {
   createAndServe(
       {
         middleware: [moduleSpecifierTransform(
-            (_baseURL, _specifier) => {
+            (_baseURL, _specifier, _logger) => {
               throw new Error('whoopsie daisy');
             },
             {logger})],

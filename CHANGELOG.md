@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -->
 
 ## Unreleased
-
+- Fixed issue where `nodeResolve()` did not properly effect the level of the provided `logger` where individual specifier transform logging was concerned.
 - Fix `Module '@babel/generator' resolves to an untyped module` error for TypeScript users.
 <!-- Add new unreleased items here -->
 

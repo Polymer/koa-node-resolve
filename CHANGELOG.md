@@ -10,11 +10,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-## Unreleased
+<!-- ## Unreleased -->
+<!-- Add new unreleased items here -->
+
+## [1.0.0-pre.5] - 2019-06-25
 - Fixed issue where `nodeResolve()` did not properly effect the level of the provided `logger` where individual specifier transform logging was concerned.
 - Fix `Module '@babel/generator' resolves to an untyped module` error for TypeScript users.
 - Fix issue where html/head/body tags were stripped out by default parser/serializer.
-<!-- Add new unreleased items here -->
 
 ## [1.0.0-pre.4] - 2019-06-07
 - Added `logLevel` option which defaults to `warn` so info/debug transformations are supressed by default.

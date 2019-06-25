@@ -29,6 +29,7 @@ test(
                 [moduleSpecifierTransform((_, __, ___) => './x.js', {logger})],
             routes: {
               '/my-page.html': `
+                <!DOCTYPE html>
                 <html>
                   <head>
                     <script type="module">
@@ -46,6 +47,7 @@ test(
             t.equal(
                 squeeze((await request(server).get('/my-page.html')).text),
                 squeeze(`
+                  <!DOCTYPE html>
                   <html>
                     <head>
                       <script type="module">

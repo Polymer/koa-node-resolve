@@ -50,7 +50,7 @@ export type ModuleSpecifierTransformOptions = {
 };
 
 const defaultHTMLParser = (html: string): Parse5Node =>
-    parse5Parse(html) as Parse5Node;
+    parse5Parse(html, {sourceCodeLocationInfo: true}) as Parse5Node;
 
 const defaultHTMLSerializer = (ast: Parse5Node): string => {
   removeFakeRootElements(ast);

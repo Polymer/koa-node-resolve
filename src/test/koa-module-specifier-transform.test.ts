@@ -18,6 +18,51 @@ import {moduleSpecifierTransform} from '../koa-module-specifier-transform';
 
 import {createAndServe, squeeze, testLogger} from './test-utils';
 
+test(
+    'moduleSpecifierTransform default parse/serialize preserves tags',
+    async (t) => {
+      t.plan(1);
+      const logger = testLogger();
+      createAndServe(
+          {
+            middleware:
+                [moduleSpecifierTransform((_, __, ___) => './x.js', {logger})],
+            routes: {
+              '/my-page.html': `
+                <!DOCTYPE html>
+                <html>
+                  <head>
+                    <script type="module">
+                    import * as x from 'x';
+                    </script>
+                  </head>
+                  <body>
+                    Cool
+                  </body>
+                </html>
+              `,
+            },
+          },
+          async (server) => {
+            t.equal(
+                squeeze((await request(server).get('/my-page.html')).text),
+                squeeze(`
+                  <!DOCTYPE html>
+                  <html>
+                    <head>
+                      <script type="module">
+                      import * as x from './x.js';
+                      </script>
+                    </head>
+                    <body>
+                      Cool
+                    </body>
+                  </html>
+                `),
+                `should preserve existing html/head/body elements`);
+          });
+    });
+
 test('moduleSpecifierTransform callback returns undefined to noop', async (t) => {
   t.plan(3);
   const logger = testLogger();

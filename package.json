@@ -1,6 +1,6 @@
 {
   "name": "koa-node-resolve",
-  "version": "1.0.0-pre.4",
+  "version": "1.0.0-pre.5",
   "description": "",
   "main": "lib/koa-node-resolve.js",
   "files": [

@@ -27,12 +27,11 @@ export type NodeResolveOptions =
     ModuleSpecifierTransformOptions&{root?: string};
 
 /**
-/**
-* @param root The on-disk directory that maps to the served root URL, used to
-*     resolve module specifiers in filesystem.  In most cases this should match
-*     the root directory configured in your downstream static file server
-*     middleware.
-*/
+ * @param root The on-disk directory that maps to the served root URL, used to
+ *   resolve module specifiers in filesystem.  In most cases this should match
+ *   the root directory configured in your downstream static file server
+ *   middleware.
+ */
 export const nodeResolve =
     (options: NodeResolveOptions = {}): Koa.Middleware => {
       const logger = options.logger === false ?

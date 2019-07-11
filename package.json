@@ -1,7 +1,7 @@
 {
   "name": "koa-node-resolve",
   "version": "1.0.0-pre.5",
-  "description": "",
+  "description": "Koa middleware that transforms Node package specifiers to relative paths",
   "main": "lib/koa-node-resolve.js",
   "files": [
     "lib/*",

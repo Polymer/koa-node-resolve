@@ -10,9 +10,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-## Unreleased
-- Fixed issue where syntax errors encountered in files would result in an empty response.
+<!-- ## Unreleased -->
 <!-- Add new unreleased items here -->
+
+## [1.0.0-pre.6] - 2019-07-30
+- Fixed issue where syntax errors encountered in files would result in an empty response.
 
 ## [1.0.0-pre.5] - 2019-06-25
 - Fixed issue where `nodeResolve()` did not properly effect the level of the provided `logger` where individual specifier transform logging was concerned.

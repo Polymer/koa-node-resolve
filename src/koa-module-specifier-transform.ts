@@ -167,6 +167,10 @@ export const moduleSpecifierTransform =
               logger.error(
                   `Unable to transform module specifiers in "${url}" due to`,
                   error);
+          // We want errors to result in serving the unchanged original file. If
+          // body was a stream then we've already consumed it, so we need to
+          // assign the string copy here.
+          ctx.body = body;
         }
       };
     };

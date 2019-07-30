@@ -10,7 +10,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
    Unreleased section, uncommenting the header as necessary.
 -->
 
-<!-- ## Unreleased -->
+## Unreleased
+- Fixed issue where syntax errors encountered in files would result in an empty response.
 <!-- Add new unreleased items here -->
 
 ## [1.0.0-pre.5] - 2019-06-25

@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new unreleased items here -->
 
-## [1.0.0-pre.6] - 2019-07-30
+## [1.0.0-pre.6] - 2019-08-06
 - Fixed issue where syntax errors encountered in files would result in an empty response.
 
 ## [1.0.0-pre.5] - 2019-06-25

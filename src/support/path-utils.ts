@@ -11,7 +11,9 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import {relative} from 'path';
+import {posix, sep as pathSeparator} from 'path';
+
+const dirnameRegex = process.platform === 'win32' ? /[^\\]+$/ : /[^\/]+$/;
 
 /**
  * Similar to `path.dirname()` except includes trailing slash and for a
@@ -19,23 +21,23 @@ import {relative} from 'path';
  * trailing slash indicates `this` is a folder name not a file name.
  * (`path.dirname('/like/this/')` returns `/like`.)
  */
-export const dirname = (path: string): string => path.replace(/[^\/]+$/, '');
+export const dirname = (path: string): string => path.replace(dirnameRegex, '');
 
-export const ensureLeadingDot = (path: string): string =>
+export const ensureLeadingDotInURL = (path: string): string =>
     (path.startsWith('../') || path.startsWith('./')) ? path : './' + path;
 
-export const ensureTrailingSlash = (path: string): string =>
-    path.endsWith('/') ? path : path + '/';
+export const ensureTrailingSlashInPath = (path: string): string =>
+    path.endsWith(pathSeparator) ? path : path + pathSeparator;
 
 export const forwardSlashesOnlyPlease = (path: string): string =>
     path.replace(/\\/g, '/');
 
-export const getBasePath = (href: string): string =>
-    href.replace(/[^\/]+$/, '');
+export const getBaseUrl = (href: string): string => href.replace(/[^\/]+$/, '');
 
-export const noLeadingSlash = (href: string): string => href.replace(/^\//, '');
+export const noLeadingSlashInURL = (href: string): string =>
+    href.replace(/^\//, '');
 
-export const relativePath = (from: string, to: string): string =>
-    ensureLeadingDot(relative(
-        getBasePath(forwardSlashesOnlyPlease(from)),
+export const relativePathToUrl = (from: string, to: string): string =>
+    ensureLeadingDotInURL(posix.relative(
+        getBaseUrl(forwardSlashesOnlyPlease(from)),
         forwardSlashesOnlyPlease(to)));

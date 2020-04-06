@@ -14,13 +14,13 @@
 import {resolve as resolvePath} from 'path';
 import test from 'tape';
 
-import {ensureTrailingSlash} from '../support/path-utils';
+import {ensureTrailingSlashInPath} from '../support/path-utils';
 import {resolveNodeSpecifier} from '../support/resolve-node-specifier';
 import {testLogger} from './test-utils';
 
 const logger = testLogger();
 const fixturesPath =
-    ensureTrailingSlash(resolvePath(__dirname, '../../test/fixtures/'));
+    ensureTrailingSlashInPath(resolvePath(__dirname, '../../test/fixtures/'));
 const resolve = (specifier: string): string =>
     resolveNodeSpecifier(fixturesPath, specifier, logger);
 

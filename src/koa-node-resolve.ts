@@ -18,7 +18,7 @@ import {parse as parseURL} from 'url';
 import {moduleSpecifierTransform, ModuleSpecifierTransformOptions} from './koa-module-specifier-transform';
 import {prefixedLogger} from './support/logger';
 import {Logger} from './support/logger';
-import {noLeadingSlash} from './support/path-utils';
+import {noLeadingSlashInURL} from './support/path-utils';
 import {resolveNodeSpecifier} from './support/resolve-node-specifier';
 
 export {Logger} from './support/logger';
@@ -42,7 +42,7 @@ export const nodeResolve =
               resolveNodeSpecifier(
                   resolvePath(
                       resolvePath(options.root || '.'),
-                      noLeadingSlash(parseURL(baseURL).pathname || '/')),
+                      noLeadingSlashInURL(parseURL(baseURL).pathname || '/')),
                   specifier,
                   logger),
           Object.assign({}, options, {logger}));

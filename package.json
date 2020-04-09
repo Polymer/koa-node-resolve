@@ -12,10 +12,10 @@
     "clean": "rimraf lib",
     "compile": "tsc",
     "depcheck": "depcheck --ignore-dirs=lib --ignores=\"rimraf,source-map-support,@types/*\"",
-    "format": "find src -name \"*.ts\" | xargs clang-format --style=file -i",
+    "format": "clang-format --style=file -i \"--glob=src/**/*.ts\"",
     "lint": "tslint -p . --fix",
     "test": "npm run test:raw --silent | tap-diff",
-    "test:raw": "tape -r source-map-support/register 'lib/test/*.test.js' 'lib/test/**/*.test.js'"
+    "test:raw": "tape -r source-map-support/register \"lib/test/*.test.js\" \"lib/test/**/*.test.js\""
   },
   "repository": {
     "type": "git",

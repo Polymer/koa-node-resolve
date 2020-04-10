@@ -15,7 +15,7 @@ import nodeResolve from 'resolve';
 
 import {Logger} from './logger';
 
-import {dirname, relativePathToUrl} from './path-utils';
+import {dirname, relativePathToURL} from './path-utils';
 
 export const resolveNodeSpecifier =
     (modulePath: string, specifier: string, logger: Logger): string => {
@@ -35,7 +35,7 @@ export const resolveNodeSpecifier =
                 packageJson.main
           })
         });
-        const resolvedURL = relativePathToUrl(modulePath, dependencyPath);
+        const resolvedURL = relativePathToURL(modulePath, dependencyPath);
         if (resolvedURL !== specifier) {
           logger.debug &&
               logger.debug(`Resolved Node module specifier "${specifier}" to "${

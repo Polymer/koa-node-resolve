@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
 <!-- Add new unreleased items here -->
+## [1.0.0-pre.7] - 2020-04-09
+- Added support for Windows paths (thanks, @andrewiggins)
 
 ## [1.0.0-pre.6] - 2019-08-06
 - Fixed issue where syntax errors encountered in files would result in an empty response.

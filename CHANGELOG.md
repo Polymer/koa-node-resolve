@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
 <!-- Add new unreleased items here -->
+
+## [1.0.0-pre.8] - 2020-07-06
+- Fixed an issue with module resolution of specifiers inside of HTML files being served from server root route.
+
 ## [1.0.0-pre.7] - 2020-04-09
 - Added support for Windows paths (thanks, @andrewiggins)
 

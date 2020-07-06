@@ -11,7 +11,7 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import {posix, sep as pathSeparator} from 'path';
+import {posix, resolve as resolvePath, sep as pathSeparator} from 'path';
 
 const filenameRegex = process.platform === 'win32' ? /[^\\]+$/ : /[^\/]+$/;
 
@@ -35,6 +35,9 @@ export const forwardSlashesOnlyPlease = (path: string): string =>
 
 export const getBaseURL = (href: string): string => href.replace(/[^\/]+$/, '');
 
+export const noTrailingSlashInPath = (path: string): string =>
+    path.replace(/\/$/, '');
+
 export const noLeadingSlashInURL = (href: string): string =>
     href.replace(/^\//, '');
 
@@ -42,3 +45,12 @@ export const relativePathToURL = (from: string, to: string): string =>
     ensureLeadingDotInURL(posix.relative(
         getBaseURL(forwardSlashesOnlyPlease(from)),
         forwardSlashesOnlyPlease(to)));
+
+export const resolvePathPreserveTrailingSlash =
+    (from: string, to: string): string => {
+      const resolvedPath = resolvePath(from, to);
+      return isDirectorySpecifier(to) ? `${resolvedPath}/` : resolvedPath;
+    };
+
+const isDirectorySpecifier = (specifier: string) => ['', '.', '..'].includes(
+    specifier.match(/([^\/]*$)/)![0]);

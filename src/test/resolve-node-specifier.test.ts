@@ -11,16 +11,15 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import {resolve as resolvePath} from 'path';
 import test from 'tape';
 
-import {ensureTrailingSlashInPath} from '../support/path-utils';
+import {resolvePathPreserveTrailingSlash} from '../support/path-utils';
 import {resolveNodeSpecifier} from '../support/resolve-node-specifier';
 import {testLogger} from './test-utils';
 
 const logger = testLogger();
 const fixturesPath =
-    ensureTrailingSlashInPath(resolvePath(__dirname, '../../test/fixtures/'));
+    resolvePathPreserveTrailingSlash(__dirname, '../../test/fixtures/');
 const resolve = (specifier: string): string =>
     resolveNodeSpecifier(fixturesPath, specifier, logger);
 

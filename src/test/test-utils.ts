@@ -37,8 +37,8 @@ export const createApp = (options: AppOptions): Koa => {
       app.use(route.get(key, (ctx) => {
         if (key.endsWith('.js')) {
           ctx.type = 'js';
-        }
-        if (key.endsWith('.html')) {
+        } else {
+          // Assume everything else is html.
           ctx.type = 'html';
         }
         // Make our body a stream, like koa static would do, to make sure we

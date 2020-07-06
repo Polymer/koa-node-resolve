@@ -11,15 +11,16 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import {resolve as resolvePath} from 'path';
 import request from 'supertest';
 import test from 'tape';
 
 import {nodeResolve} from '../koa-node-resolve';
+import {resolvePathPreserveTrailingSlash} from '../support/path-utils';
 
 import {createAndServe, squeeze, testLogger} from './test-utils';
 
-const fixturesPath = resolvePath(__dirname, '../../test/fixtures/');
+const fixturesPath =
+    resolvePathPreserveTrailingSlash(__dirname, '../../test/fixtures/');
 
 test('nodeResolve middleware transforms resolvable specifiers', async (t) => {
   t.plan(4);
@@ -59,6 +60,48 @@ test('nodeResolve middleware transforms resolvable specifiers', async (t) => {
         t.deepEqual(logger.infos.map((args) => args.join(' ')), [
           '[koa-node-resolve] Transformed 1 module specifier(s) in "/my-module.js"',
           '[koa-node-resolve] Transformed 1 module specifier(s) in "/my-page.html"',
+        ]);
+      });
+});
+
+test('nodeResolve middleware works even if baseURL has no pathname', async (t) => {
+  t.plan(4);
+  const logger = testLogger();
+  createAndServe(
+      {
+        middleware:
+            [nodeResolve({root: fixturesPath, logger, logLevel: 'debug'})],
+        routes: {
+          '/my-module.js': `import * as x from 'x';`,
+          '/': `
+            <script type="module">
+            import * as x from 'x';
+            </script>
+          `,
+        },
+      },
+      async (server) => {
+        t.equal(
+            squeeze((await request(server).get('/my-module.js')).text),
+            squeeze(`
+              import * as x from './node_modules/x/main.js';
+            `),
+            'should transform specifiers in JavaScript module');
+        t.equal(
+            squeeze((await request(server).get('/')).text),
+            squeeze(`
+              <script type="module">
+              import * as x from './node_modules/x/main.js';
+              </script>
+            `),
+            'should transform specifiers in inline module script');
+        t.deepEqual(logger.debugs.map((args) => args.join(' ')), [
+          '[koa-node-resolve] Resolved Node module specifier "x" to "./node_modules/x/main.js"',
+          '[koa-node-resolve] Resolved Node module specifier "x" to "./node_modules/x/main.js"',
+        ]);
+        t.deepEqual(logger.infos.map((args) => args.join(' ')), [
+          '[koa-node-resolve] Transformed 1 module specifier(s) in "/my-module.js"',
+          '[koa-node-resolve] Transformed 1 module specifier(s) in "/"',
         ]);
       });
 });

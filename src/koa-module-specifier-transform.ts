@@ -69,16 +69,6 @@ const defaultJSParser = (js: string): BabelNode =>
       ],
     }) as BabelNode;
 
-// TODO(usergenic): Send PR to update `@types/babel__generator`
-declare module '@babel/generator' {
-  interface GeneratorOptions {
-    jsescOption: {
-      quotes: 'single'|'double',
-    };
-    retainFunctionParens: Boolean;
-  }
-}
-
 const defaultJSSerializer = (ast: BabelNode): string =>
     babelSerialize(ast, {
       concise: false,

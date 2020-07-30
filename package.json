@@ -52,7 +52,7 @@
     "typescript": "^3.4.5"
   },
   "dependencies": {
-    "@types/babel__generator": "^7.0.2",
+    "@types/babel__generator": "^7.6.1",
     "@babel/generator": "^7.4.4",
     "@babel/parser": "^7.4.5",
     "@babel/traverse": "^7.4.5",

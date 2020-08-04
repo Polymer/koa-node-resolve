@@ -19,7 +19,7 @@ import {dirname, relativePathToURL} from './path-utils';
 
 export const resolveNodeSpecifier =
     (modulePath: string, specifier: string, logger: Logger): string => {
-      if (isURL(specifier)) {
+      if (isURL(specifier) || specifier.startsWith('/')) {
         return specifier;
       }
       try {

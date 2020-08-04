@@ -107,7 +107,7 @@ test('nodeResolve middleware works even if baseURL has no pathname', async (t) =
 });
 
 test('nodeResolve middleware ignores unresolvable specifiers', async (t) => {
-  t.plan(2);
+  t.plan(4);
   const logger = testLogger();
   createAndServe(
       {
@@ -138,5 +138,52 @@ test('nodeResolve middleware ignores unresolvable specifiers', async (t) => {
               </script>
             `),
             'should leave unresolvable specifier in inline scripts alone');
+
+        const expectedWarning =
+            '[koa-node-resolve] Unable to resolve Node module specifier "wubble-flurp" due to Error: Cannot find module \'wubble-flurp\' from \'';
+        const warnings = logger.warns.map((args) => args.join(' '));
+        warnings.forEach((msg) => {
+          t.ok(
+              msg.startsWith(expectedWarning),
+              'Should warn user about being unable to resolve module');
+        });
+      });
+});
+
+test('nodeResolve middleware ignores absolute path specifiers', async (t) => {
+  t.plan(3);
+  const logger = testLogger();
+  createAndServe(
+      {
+        middleware: [nodeResolve({root: fixturesPath, logger})],
+        routes: {
+          '/my-module.js': `
+                import * as x from '/x.js';
+              `,
+          '/my-page.html': `
+                <script type="module">
+                import * as x from '/x.js';
+                </script>
+              `,
+        },
+      },
+      async (server) => {
+        t.equal(
+            squeeze((await request(server).get('/my-module.js')).text),
+            squeeze(`
+                  import * as x from '/x.js';
+                `),
+            'should leave absolute path specifier in external scripts alone');
+        t.equal(
+            squeeze((await request(server).get('/my-page.html')).text),
+            squeeze(`
+                  <script type="module">
+                  import * as x from '/x.js';
+                  </script>
+                `),
+            'should leave absolute path specifier in inline scripts alone');
+
+        const warnings = logger.warns.map((args) => args.join(' '));
+        t.equal(warnings.length, 0, 'Should not print any warnings');
       });
 });

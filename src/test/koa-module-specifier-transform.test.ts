@@ -136,14 +136,14 @@ test('moduleSpecifierTransform will convert dynamic imports', async (t) => {
             // retain parenthesis around single parameter anonymous functions,
             // so `(x) => ...` is unavoidably transformed to `x => ...`
             squeeze(`
-              import('./node_modules/x/index.js').then(x => x.doStuff());
+              import('./node_modules/x/index.js').then((x) => x.doStuff());
             `),
             'should transform dynamic import in external module');
         t.equal(
             squeeze((await request(server).get('/my-page.html')).text),
             squeeze(`
               <script type="module">
-              import('./node_modules/x/index.js').then(x => x.doStuff());
+              import('./node_modules/x/index.js').then((x) => x.doStuff());
               </script>
             `),
             'should transform dynamic import in inline module script');
@@ -227,8 +227,8 @@ test('moduleSpecifierTransform middleware logs errors', async (t) => {
         t.deepEqual(
             logger.errors.map((args: unknown[]) => args.join(' ')),
             [
-              'Unable to transform module specifiers in "/my-module.js" due to SyntaxError: Unexpected token, expected ";" (2:17)',
-              'Unable to transform module specifiers in "/my-page.html" due to SyntaxError: Unexpected token, expected ";" (2:19)',
+              'Unable to transform module specifiers in "/my-module.js" due to SyntaxError: Missing semicolon. (2:16)',
+              'Unable to transform module specifiers in "/my-page.html" due to SyntaxError: Missing semicolon. (2:18)',
             ],
             'should log every error thrown');
       });

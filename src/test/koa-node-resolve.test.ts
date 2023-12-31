@@ -140,3 +140,31 @@ test('nodeResolve middleware ignores unresolvable specifiers', async (t) => {
             'should leave unresolvable specifier in inline scripts alone');
       });
 });
+
+test('nodeResolve middleware resolves imports with attributes', async (t) => {
+  t.plan(2);
+  const logger = testLogger();
+  createAndServe(
+      {
+        middleware:
+            [nodeResolve({root: fixturesPath, logger, logLevel: 'debug'})],
+        routes: {
+          '/modern-syntax.js': `import styles from 'x/styles.css' with { type: 'css' };`,
+          '/deprecated-syntax.js': `import styles from 'x/styles.css' assert { type: 'css' };`,
+        },
+      },
+      async (server) => {
+        t.equal(
+            squeeze((await request(server).get('/modern-syntax.js')).text),
+            squeeze(`
+              import styles from './node_modules/x/styles.css' assert { type: 'css' };
+            `),
+            'should transform specifiers in CSS module script, modern syntax');
+        t.equal(
+            squeeze((await request(server).get('/deprecated-syntax.js')).text),
+            squeeze(`
+              import styles from './node_modules/x/styles.css' assert { type: 'css' };
+            `),
+            'should transform specifiers in CSS module script, deprecated syntax');
+      });
+});

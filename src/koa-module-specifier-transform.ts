@@ -66,12 +66,14 @@ const defaultJSParser = (js: string): BabelNode =>
         'exportDefaultFrom',
         'exportNamespaceFrom',
         'importMeta',
+        ['importAttributes', { deprecatedAssertSyntax: true }],
       ],
     }) as BabelNode;
 
 const defaultJSSerializer = (ast: BabelNode): string =>
     babelSerialize(ast, {
       concise: false,
+      importAttributesKeyword: 'assert',
       jsescOption: {
         quotes: 'single',
       },
@@ -100,7 +102,7 @@ export const moduleSpecifierTransform =
           return;
         }
 
-        const body = await getBodyAsString(ctx.body);
+        const body = await getBodyAsString(ctx.body as string | Stream | Buffer);
         // When there's no body to return, there's nothing to transform.
         if (!body) {
           return;

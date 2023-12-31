@@ -26,13 +26,8 @@ export const resolveNodeSpecifier =
         const dependencyPath = nodeResolve.sync(specifier, {
           basedir: dirname(modulePath),
           extensions: ['.js', '.json', '.node'],
-          packageFilter: (packageJson: {
-            main?: string,
-            module?: string,
-            'jsnext:main'?: string,
-          }) => Object.assign(packageJson, {
-            main: packageJson.module || packageJson['jsnext:main'] ||
-                packageJson.main
+          packageFilter: (pkg) => Object.assign(pkg, {
+            main: (pkg.module || pkg['jsnext:main'] || pkg.main) as string
           })
         });
         const resolvedURL = relativePathToURL(modulePath, dependencyPath);
